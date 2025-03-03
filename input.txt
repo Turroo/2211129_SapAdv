@@ -1,0 +1,53 @@
+# SYSTEM DESCRIPTION:
+
+The proposed project aims to create an innovative academic platform tailored for university students, particularly those enrolled at Sapienza University. The system is designed to enhance students' academic experience by providing tools for course evaluation, collaborative learning, and resource sharing. By allowing students to log in with their academic credentials and register under their respective degree programs, the platform ensures a personalized and structured environment.
+
+The system's core features include a comprehensive view of all courses associated with a student's degree, enabling them to rate and review courses based on multiple factors. These ratings are updated annually, providing year-specific insights into course quality and relevance. Additionally, students can contribute to the academic community by uploading notes with descriptions, which can be rated by peers to ensure quality and usability.
+
+An engaging quiz system is also integrated, allowing students to prepare for exams effectively. Quizzes can cover specific course topics or entire courses and can be created by students themselves. The quizzes are subject to peer ratings, fostering a dynamic and interactive learning ecosystem. This multifaceted platform not only supports academic excellence but also promotes collaboration and active participation among students.
+
+Potential users of the system include undergraduate and graduate students, academic advisors, and faculty members interested in course feedback. Key use cases involve course selection guidance, collaborative note sharing, peer-reviewed resource enhancement, and interactive exam preparation. The system’s features aim to streamline academic workflows while fostering a supportive and collaborative learning environment.
+
+
+# USER STORIES:
+
+1) As a User, I want to register to the site so I can access it.
+2) As a User, I want to login to the site so I can access it.
+3) As a User, I want to be able to delete my account and all whole data connected to it, so that none of my data is present anymore in the website.
+4) As a User, I want to reload the site many times avoiding to put the credentials everytime a reload occurs, so I can use the site.
+5) As a User, I want to be able to logout, so no one else uses my account.
+6) As a User, I want to check my personal information.
+7) As a User, I want to edit my personal information, as some of my info may change.
+8) As a User, I want to choose the degree I'm enrolled in, so I can use the site in the correct way.
+9) As a User, I want to see the list of courses of my degree, so I can use the functionalities of the site.
+10) As a User, I want to select a course of my degree, so I can see the list of the teachers that take/have taken that course.
+11) As a User, I want to choose a teacher from the list of teachers that take/have taken a single course, so that I can rate the course taken by that chosen teacher.
+12) As a User, I want to rate the course taken by the chosen teacher, so that the rating gets added.
+13) As a User, I want to check the average rating of the course taken by the single teacher, so I can eventually decide whether to take or not take the course.
+14) As a User, I want to to add a written review for a specific course taken by a single teacher, so everyone can check my review.
+15) As a User, I want to edit/delete a personal written review, as I may have made some mistakes.
+16) As a User, I want to edit/delete a rating I have assigned, as I may have made some mistakes.
+17) As a User, I want to check notes/material uploaded for a single course taken by a single teacher, so I can use this material.
+18) As a User, I want to check ratings assigned to the uploaded material, so I can decide whether to download the material or not
+19) As a User, I want to upload notes/material for a single course taken by a single teacher, so that I can contribute to the academic community.
+20) As a User, I want to add a description to the uploaded material, so that others can understand its contents before downloading.
+21) As a User, I want to edit/delete my uploaded material, in case I want to update or remove it.
+22) As a User, I want to rate the uploaded material, so that the best resources are highlighted.
+23) As a User, I want to report inappropriate or incorrect material, so that the administrators can review and take necessary actions.
+24) As a User, I want to check the list of quizzes available for a specific course, so that I can practice for exams.
+25) As a User, I want to attempt a quiz for a specific course, so that I can test my knowledge.
+26) As a User, I want to create quizzes for a specific course, so that I can help others prepare for exams.
+27) As a User, I want to edit/delete quizzes I have created, in case I need to update or remove them.
+28) As a User, I want to rate quizzes created by other students, so that high-quality quizzes are more visible.
+29) As a User, I want to report inappropriate or incorrect quizzes, so that administrators can review and take necessary actions.
+30) As an Administrator, I want to login to the site, so I can access it.
+31) As an Administrator, I want to reload the site many times avoiding to put the credentials everytime a reload occurs, so I can use the site.
+32) As an Administrator, I want to be able to logout, so no one else uses my account.
+33) As an Administrator, I want to manage user accounts (view, suspend, or delete), so that I can ensure a safe and secure environment.
+34) As an Administrator, I want to review and moderate course ratings and reviews, so that inappropriate content is removed.
+35) As an Administrator, I want to manage uploaded notes/material (approve, delete, or edit descriptions), so that only relevant and high-quality content is available.
+36) As an Administrator, I want to review and take action on reported notes/material, so that inappropriate content is handled efficiently.
+37) As an Administrator, I want to review and moderate quizzes, so that incorrect or inappropriate quizzes are removed.
+38) As an Administrator, I want to manage the list of degrees and courses, so that the platform remains updated and accurate.
+39) As an Administrator, I want to track and review user activity logs, so that I can monitor platform engagement and security.
+40) As an Administrator, I want to manage the list of degrees and courses, so that the platform remains updated and accurate.
