@@ -23,3 +23,16 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     return new_user
+
+@router.post("/login", response_model=UserResponse)
+def login(user: UserCreate, db: Session = Depends(get_db)):
+    existing_user = db.query(User).filter(User.email == user.email).first()
+    if not existing_user:
+        raise HTTPException(status_code=400, detail="Invalid credentials")
+
+    # Check if the provided password matches the hashed password
+    if not pwd_context.verify(user.password, existing_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Invalid credentials")
+
+    return existing_user
+
