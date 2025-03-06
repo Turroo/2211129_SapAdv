@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from backend.database.database import get_db
-from backend.models.user import User
-from backend.schemas.user import UserUpdate
-from backend.auth.auth import get_current_user  # Funzione per autenticazione
+from database.database import get_db
+from models.user import User
+from schemas.user import UserUpdate
+from auth.auth import get_current_user  # Funzione per autenticazione
 from passlib.context import CryptContext
 
 router = APIRouter()

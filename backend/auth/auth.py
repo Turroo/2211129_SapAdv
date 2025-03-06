@@ -3,8 +3,8 @@ from jose import JWTError, jwt
 from fastapi import HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
-from backend.database.database import get_db
-from backend.models.user import User
+from database.database import get_db
+from models.user import User
 
 # Configura il meccanismo HTTPBearer
 SECRET_KEY = "a_very_secret_key"  # Cambia questa chiave con una più sicura!

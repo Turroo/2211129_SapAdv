@@ -1,11 +1,17 @@
 from fastapi import FastAPI
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from backend.routes.auth import router as auth_router
-from backend.routes.user import router as user_router
+from routes.auth import router as auth_router
+from routes.user import router as user_router
 from fastapi.middleware.cors import CORSMiddleware
+from database.database import engine, Base
 
 app = FastAPI()
 security = HTTPBearer()
+
+# Creazione delle tabelle nel database al primo avvio
+print("Initializing database...")
+Base.metadata.create_all(bind=engine)
+print("Database initialized successfully!")
 
 # Aggiungi il middleware CORS alla tua app FastAPI
 origins = [

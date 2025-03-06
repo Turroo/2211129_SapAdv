@@ -1,5 +1,7 @@
-from backend.database.database import Base, engine
-from backend.models.user import User
+
+
+from database import Base, engine
+from models.user import User
 
 print("Creating database tables...")
 Base.metadata.create_all(bind=engine)
