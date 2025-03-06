@@ -12,9 +12,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  backend:
-    build: ./
-    container_name: backend
+  auth:
+    build: ./Authentication  # Percorso corretto per il Dockerfile dell'Auth Service
+    container_name: auth_service
     restart: always
     depends_on:
       - db
@@ -22,6 +22,28 @@ services:
       DATABASE_URL: postgresql://postgres:admin@db/sapienza_advisor
     ports:
       - "8000:8000"
+
+  users:
+    build: ./UserManagement # Percorso corretto per il Dockerfile del Users Service
+    container_name: users_service
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://postgres:admin@db/sapienza_advisor
+    ports:
+      - "8001:8001"
+
+  faculties:
+    build: ./FacultyManagement  # Percorso corretto per il Dockerfile del Faculties Service
+    container_name: faculties_service
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://postgres:admin@db/sapienza_advisor
+    ports:
+      - "8002:8002"
 
 volumes:
   postgres_data:
