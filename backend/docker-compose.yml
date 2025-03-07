@@ -45,5 +45,16 @@ services:
     ports:
       - "8002:8002"
 
+  courses:
+    build: ./CourseManagement  # Percorso corretto per il Dockerfile del Courses Service
+    container_name: courses_service
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://postgres:admin@db/sapienza_advisor
+    ports:
+      - "8003:8003"
+
 volumes:
   postgres_data:

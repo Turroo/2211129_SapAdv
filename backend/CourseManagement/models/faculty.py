@@ -9,4 +9,4 @@ class Faculty(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
 
-    courses = relationship("Course", back_populates="faculty", cascade="all, delete-orphan")  # Relazione inversa
+    courses = relationship("Course", back_populates="faculty", cascade="all, delete-orphan")
