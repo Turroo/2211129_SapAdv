@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.security import HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
 from routes.user import router as user_router
-from database.database import engine, Base
+
 
 app = FastAPI()
 security = HTTPBearer()
@@ -13,7 +13,7 @@ security = HTTPBearer()
 # Aggiungi il middleware CORS alla tua app FastAPI
 origins = [
     "http://localhost:3000",  # Consenti richieste da questa origine (dove si trova il tuo frontend React)
-    "http://localhost:8000",  # Se hai bisogno di consentire anche il backend stesso
+    "http://localhost:8001",  # Se hai bisogno di consentire anche il backend stesso
     # Puoi aggiungere altre origini se necessario
 ]
 

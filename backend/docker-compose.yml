@@ -23,9 +23,9 @@ services:
     ports:
       - "8000:8000"
 
-  users:
-    build: ./UserManagement # Percorso corretto per il Dockerfile del Users Service
-    container_name: users_service
+  user:
+    build: ./UserManagement  # Percorso corretto per il Dockerfile del User Management Service
+    container_name: user_service
     restart: always
     depends_on:
       - db
@@ -34,9 +34,9 @@ services:
     ports:
       - "8001:8001"
 
-  faculties:
-    build: ./FacultyManagement  # Percorso corretto per il Dockerfile del Faculties Service
-    container_name: faculties_service
+  faculty:
+    build: ./FacultyManagement  # Percorso corretto per il Dockerfile del Faculty Service
+    container_name: faculty_service
     restart: always
     depends_on:
       - db
@@ -44,17 +44,19 @@ services:
       DATABASE_URL: postgresql://postgres:admin@db/sapienza_advisor
     ports:
       - "8002:8002"
-
-  courses:
-    build: ./CourseManagement  # Percorso corretto per il Dockerfile del Courses Service
-    container_name: courses_service
+  
+  course:
+    build: ./CourseManagement  # Percorso corretto per il Dockerfile del Course Service
+    container_name: course_service
     restart: always
     depends_on:
       - db
+      - faculty
     environment:
       DATABASE_URL: postgresql://postgres:admin@db/sapienza_advisor
     ports:
       - "8003:8003"
+
 
 volumes:
   postgres_data:

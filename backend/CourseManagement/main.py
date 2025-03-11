@@ -4,31 +4,56 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes.course import router as course_router
 from models.course import Course
 from models.faculty import Faculty
-from models.user_course import user_courses
-from database.database import engine, Base
+from models.teacher import Teacher
+from database.database import engine, Base, SessionLocal
 
 app = FastAPI()
 security = HTTPBearer()
 
-# Creazione delle tabelle solo per il servizio CourseManagement
-print("Initializing Course Management database...")
-Base.metadata.create_all(bind=engine)
-print("Course Management Database initialized successfully!")
+# Funzione per popolare la tabella `teachers`
+def populate_teachers():
+    db = SessionLocal()  # Crea una nuova sessione
+    
+    try:
+        existing_teachers = db.query(Teacher).count()
+        if existing_teachers > 0:
+            print("⚠️ I professori sono già stati inseriti nel database.")
+            return
+        
+        teachers_data = [
+            {"id": 1, "name": "Marco Rossi"},
+            {"id": 2, "name": "Giulia Bianchi"},
+            {"id": 3, "name": "Luca Verdi"},
+            {"id": 4, "name": "Francesca Neri"},
+            {"id": 5, "name": "Antonio Esposito"},
+        ]
 
-# Aggiungi il middleware CORS alla tua app FastAPI
-origins = [
-    "http://localhost:3000",  # Consenti richieste da questa origine (dove si trova il tuo frontend React)
-    "http://localhost:8002",  # Se hai bisogno di consentire anche il backend stesso
-    # Puoi aggiungere altre origini se necessario
-]
+        for teacher_data in teachers_data:
+            teacher = Teacher(id=teacher_data["id"], name=teacher_data["name"])
+            db.add(teacher)
+
+        db.commit()  # Salva le modifiche
+    except Exception as e:
+        db.rollback()  # Se c'è un errore, annulla la transazione
+        print(f"Errore durante l'inserimento dei professori: {e}")
+    finally:
+        db.close()  # Chiudi la connessione al database
+
+
+
+# Popoliamo i professori solo se necessario
+try:
+    populate_teachers()
+except Exception as e:
+    print(f"⚠️ Errore durante la popolazione dei professori: {e}")
 
 # Configurazione CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000", "http://localhost:8003"],  # Solo frontend autorizzato
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 # Inclusione delle route specifiche per la gestione dei corsi

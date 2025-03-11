@@ -2,8 +2,6 @@ from fastapi import FastAPI
 from fastapi.security import HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
 from routes.faculty import router as faculty_router
-from models.faculty import Faculty
-from models.course import Course
 from models.teacher import Teacher
 from database.database import engine, Base
 

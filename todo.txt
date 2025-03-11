@@ -1,0 +1,22 @@
+Missing API:
+
+-Auth:
+	- google sign up + login (LEO?)
+
+-UserMGMT
+		
+
+-FacultiesMGMT
+	
+-CourseMGMT
+	- rate the course (3 ratings + add student ID + add rating ID) (make sure if no ratings, the rating gotta be unrated not 0). - 
+	- get all reviews and ratings for single students
+	- edit and delete single rating and review student
+	- get avg for course id (3 avgs)
+	- get descending/ascending list of every course (for every avg) + add USER STORY
+	 
+	
+	idRecensione corsoAssociato voto1 voto2 voto3 commento idStudente dateTime
+
+
+	3 Valutazioni: chiarezza spiegazioni, fattibilità esame, reperibilità prof

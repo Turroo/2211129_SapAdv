@@ -1,15 +1,17 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey
 from database.database import Base
-from sqlalchemy.orm import relationship  # Add this import
-from models.user_course import user_courses
-
 
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
+    email = Column(String, unique=True, index=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
     is_admin = Column(Boolean, default=False)
-    # Se un utente può iscriversi a più corsi, aggiungi questa relazione
-    courses = relationship("Course", secondary="user_courses", back_populates="users")
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
+    birth_date = Column(Date, nullable=False)
+    city = Column(String, nullable=False)
+    
+    # Aggiunta della colonna faculty_id, senza relazione diretta
+    faculty_id = Column(Integer, nullable=True)
