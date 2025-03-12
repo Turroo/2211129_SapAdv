@@ -2,13 +2,16 @@ from fastapi import FastAPI
 from fastapi.security import HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
 from routes.course import router as course_router
-from models.course import Course
-from models.faculty import Faculty
 from models.teacher import Teacher
 from database.database import engine, Base, SessionLocal
 
 app = FastAPI()
 security = HTTPBearer()
+
+# Creazione delle tabelle
+print("Initializing Courses Service database...")
+Base.metadata.create_all(bind=engine)
+print("Courses Service Database initialized successfully!")
 
 # Funzione per popolare la tabella `teachers`
 def populate_teachers():

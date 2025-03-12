@@ -8,7 +8,7 @@ from database.database import engine, Base
 app = FastAPI()
 security = HTTPBearer()
 
-# Creazione delle tabelle solo per Faculty, Course e Teacher
+# Creazione delle tabelle nel database
 print("Initializing Faculty Service database...")
 Base.metadata.create_all(bind=engine)
 print("Faculty Service Database initialized successfully!")

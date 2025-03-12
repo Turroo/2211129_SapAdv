@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey
 from database.database import Base
+from sqlalchemy.orm import relationship
 
 class User(Base):
     __tablename__ = "users"
@@ -15,3 +16,4 @@ class User(Base):
     
     # Aggiunta della colonna faculty_id, senza relazione diretta
     faculty_id = Column(Integer, nullable=True)
+    reviews = relationship("Review", back_populates="student", cascade="all, delete-orphan")  # Aggiungiamo il legame con Review

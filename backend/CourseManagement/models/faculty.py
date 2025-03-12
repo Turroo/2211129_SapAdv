@@ -2,8 +2,6 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 from database.database import Base
 
-from models.course import Course
-
 class Faculty(Base):
     __tablename__ = "faculties"
 
