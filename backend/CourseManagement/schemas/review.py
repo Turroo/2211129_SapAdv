@@ -1,19 +1,32 @@
 from pydantic import BaseModel, field_validator
 from datetime import date, datetime
 from typing import Optional
+from fastapi import HTTPException  # ✅ Importa HTTPException
+
+# Valori consentiti per i rating
+VALID_RATINGS = {1, 2, 3, 4, 5}
 
 class ReviewCreate(BaseModel):
-    rating_clarity: int
-    rating_feasibility: int
-    rating_availability: int
+    rating_clarity: float
+    rating_feasibility: float
+    rating_availability: float
     comment: Optional[str] = None
+
+    @field_validator("rating_clarity", "rating_feasibility", "rating_availability", mode="before")
+    def validate_ratings(cls, value):
+        if value not in VALID_RATINGS:
+            raise HTTPException(
+                status_code=400,
+                detail="Puoi inserire solo i voti: 1, 2, 3, 4, 5."
+            )
+        return value
 
 class ReviewResponse(BaseModel):
     id: int
     created_at: date
-    rating_clarity: int
-    rating_feasibility: int
-    rating_availability: int
+    rating_clarity: float
+    rating_feasibility: float
+    rating_availability: float
     comment: Optional[str] = None
 
     @field_validator('created_at', mode='before')
@@ -23,4 +36,4 @@ class ReviewResponse(BaseModel):
         return value
 
     class Config:
-        from_attributes = True  # Sostituisce `orm_mode = True` in Pydantic v2
+        from_attributes = True
