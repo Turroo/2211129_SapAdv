@@ -6,6 +6,8 @@ class Teacher(Base):
     __tablename__ = "teachers"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True, index=True)
+    name = Column(String, unique=True, index=True, nullable=False)
 
-    courses = relationship("Course", back_populates="teacher")  # Relazione 1:N con `Course`
+    # Relazione con i corsi
+    courses = relationship("Course", back_populates="teacher")
+

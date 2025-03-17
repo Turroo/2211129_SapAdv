@@ -32,7 +32,7 @@ class UserResponse(BaseModel):
     birth_date: date  # Ora restituisce una data reale
     city: str
     is_admin: bool
-    faculty_id : int = None
+    faculty_id : Optional[int] = None
     access_token: str
     token_type: str
 

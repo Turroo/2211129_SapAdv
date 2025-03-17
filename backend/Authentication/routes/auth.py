@@ -80,7 +80,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         birth_date=user_birth_date,  # Ora è un oggetto `date`
         city=user.city,
         is_admin=is_admin,
-        faculty_id=-1
+        faculty_id=None
     )
 
     db.add(new_user)

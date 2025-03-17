@@ -11,6 +11,19 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    networks:
+      - app_network
+    volumes:
+      - mongo_data:/data/db
 
   auth:
     build: ./Authentication  # Percorso corretto per il Dockerfile dell'Auth Service
@@ -22,6 +35,8 @@ services:
       DATABASE_URL: postgresql://postgres:admin@db/sapienza_advisor
     ports:
       - "8000:8000"
+    networks:
+      - app_network
 
   user:
     build: ./UserManagement  # Percorso corretto per il Dockerfile del User Management Service
@@ -33,6 +48,8 @@ services:
       DATABASE_URL: postgresql://postgres:admin@db/sapienza_advisor
     ports:
       - "8001:8001"
+    networks:
+      - app_network
 
   faculty:
     build: ./FacultyManagement  # Percorso corretto per il Dockerfile del Faculty Service
@@ -44,6 +61,8 @@ services:
       DATABASE_URL: postgresql://postgres:admin@db/sapienza_advisor
     ports:
       - "8002:8002"
+    networks:
+      - app_network
   
   course:
     build: ./CourseManagement  # Percorso corretto per il Dockerfile del Course Service
@@ -56,7 +75,28 @@ services:
       DATABASE_URL: postgresql://postgres:admin@db/sapienza_advisor
     ports:
       - "8003:8003"
+    networks:
+      - app_network
+
+  notes:
+    build: ./NotesManagement  # Percorso corretto per il Dockerfile del Course Service
+    container_name: notes_service
+    restart: always
+    depends_on:
+      - db
+      - mongodb
+    environment:
+      DATABASE_URL: postgresql://postgres:admin@db/sapienza_advisor
+    ports:
+      - "8004:8004"
+    networks:
+      - app_network
 
 
 volumes:
   postgres_data:
+  mongo_data:
+
+networks:
+  app_network:
+    driver: bridge

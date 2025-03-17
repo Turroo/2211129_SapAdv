@@ -40,7 +40,7 @@ def enroll_in_faculty(
     current_user: User = Depends(get_current_user)  # Ora usiamo l'utente autenticato
 ):
     # Controlliamo se l'utente è già iscritto a una facoltà
-    if current_user.faculty_id != -1:
+    if current_user.faculty_id is not None:
         raise HTTPException(status_code=400, detail="User is already enrolled in a faculty")
 
     # Verifica se la facoltà esiste
@@ -63,7 +63,7 @@ def get_my_faculty(
     current_user: User = Depends(get_current_user)  # Ora usiamo l'utente autenticato
 ):
     # Controlliamo se l'utente è iscritto a una facoltà
-    if current_user.faculty_id == -1:
+    if current_user.faculty_id is None:
         raise HTTPException(status_code=404, detail="User is not enrolled in any faculty")
 
     # Ottieni la facoltà associata all'utente
