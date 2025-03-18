@@ -24,7 +24,7 @@ Potential users of the system include undergraduate and graduate students, acade
 11) As a User, I want to choose a teacher from the list of teachers that take/have taken a single course, so that I can rate the course taken by that chosen teacher.
 12) As a User, I want to rate the course taken by the chosen teacher, so that the rating gets added.
 13) As a User, I want to check the average rating of the course taken by the single teacher, so I can eventually decide whether to take or not take the course.
-14) As a User, I want to to add a written review for a specific course taken by a single teacher, so everyone can check my review.
+14) As a User, I want to add a written review for a specific course taken by a single teacher, so everyone can check my review.
 15) As a User, I want to edit/delete a personal written review, as I may have made some mistakes.
 16) As a User, I want to edit/delete a rating I have assigned, as I may have made some mistakes.
 17) As a User, I want to check notes/material uploaded for a single course taken by a single teacher, so I can use this material.
@@ -43,11 +43,9 @@ Potential users of the system include undergraduate and graduate students, acade
 30) As an Administrator, I want to login to the site, so I can access it.
 31) As an Administrator, I want to reload the site many times avoiding to put the credentials everytime a reload occurs, so I can use the site.
 32) As an Administrator, I want to be able to logout, so no one else uses my account.
-33) As an Administrator, I want to manage user accounts (view, suspend, or delete), so that I can ensure a safe and secure environment.
+33) As an Administrator, I want to manage user accounts (view or delete), so that I can ensure a safe and secure environment.
 34) As an Administrator, I want to review and moderate course ratings and reviews, so that inappropriate content is removed.
-35) As an Administrator, I want to manage uploaded notes/material (approve, delete, or edit descriptions), so that only relevant and high-quality content is available.
+35) As an Administrator, I want to manage uploaded notes/material (approve, delete), so that only relevant and high-quality content is available.
 36) As an Administrator, I want to review and take action on reported notes/material, so that inappropriate content is handled efficiently.
-37) As an Administrator, I want to review and moderate quizzes, so that incorrect or inappropriate quizzes are removed.
-38) As an Administrator, I want to manage the list of degrees and courses, so that the platform remains updated and accurate.
-39) As an Administrator, I want to track and review user activity logs, so that I can monitor platform engagement and security.
-40) As an Administrator, I want to manage the list of degrees and courses, so that the platform remains updated and accurate.
+37) As an Administrator, I want to manage the list of degrees and courses, so that the platform remains updated and accurate.
+38) As an Administrator, I want to manage the list of teachers, so that the application remains up to date.

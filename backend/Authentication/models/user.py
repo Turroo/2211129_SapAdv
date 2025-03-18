@@ -13,7 +13,7 @@ class User(Base):
     last_name = Column(String, nullable=False)
     birth_date = Column(Date, nullable=False)
     city = Column(String, nullable=False)
-    faculty_id = Column(Integer, ForeignKey("faculties.id"), nullable=True)  # -1 se non iscritto
+    faculty_id = Column(Integer, ForeignKey("faculties.id", ondelete="SET NULL"), nullable=True) 
 
     faculty = relationship("Faculty", back_populates="students")
     notes = relationship("Note", back_populates="student", cascade="all, delete-orphan")

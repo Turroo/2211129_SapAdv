@@ -9,5 +9,5 @@ class Teacher(Base):
     name = Column(String, unique=True, index=True, nullable=False)
 
     # Relazione con i corsi
-    courses = relationship("Course", back_populates="teacher")
+    courses = relationship("Course", back_populates="teacher", cascade="save-update")
 

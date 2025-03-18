@@ -2,20 +2,24 @@ Missing API:
 
 -Auth:
 	- google sign up + login (LEO?)
-
--UserMGMT
-		
--FacultiesMGMT
 	
 -CourseMGMT
-	- rate the course (3 ratings ("Clarity of explanations","Feasibility of the exam","Availability of the professor") + add student ID + add rating ID). - 
-	- get all reviews and ratings for single students
-	- edit and delete single rating and review student
-	- get avg for course id (3 avgs, one for type of rating)
 	- get descending/ascending list of every course (for every avg) (like a filter, maybe it is better to do that on the frontend?) + add USER STORY
-	 
-	
-	idRecensione corsoAssociato voto1 voto2 voto3 commento idStudente dateTime
+	- add the fact that the student can report a review of a course
 
+-NotesMGMT
+	- add the fact that the student can report a note
 
-	3 Valutazioni: chiarezza spiegazioni, fattibilità esame, reperibilità prof
+-Report
+	- everybody can report a review and a note
+	- when a review or a note is reported, it's added to a table "Report" (id_report, id_review(nullabre=true), id_note(nullable=true), id_user, reason, datetime)
+	- only the admin can check the report table and he has the ability to delete the review or the note or the report, if the report doesn't make sense
+
+-AdminMGMT
+	- create a microservice for the admin
+	- in this microservice the admin can:
+		- manage user accounts (view and delete) (getUserDetail) (deleteUser)
+		- review and monitorate reports (getReports) (deleteReport)
+		- manage review/notes (getReviews) (getNotes) (deleteReview) (deleteNote)
+		- manage faculties and courses (getFaculties) (getCoursesByFaculty) (addFaculty) (deleteFaculty) (addCourse) (deleteCourse) 
+		- manage teachers (getTeacher) (getTeacherByCourse) (deleteTeacher)

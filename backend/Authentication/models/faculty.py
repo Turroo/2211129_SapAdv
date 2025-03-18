@@ -8,5 +8,5 @@ class Faculty(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
 
-    students = relationship("User", back_populates="faculty", cascade="all, delete-orphan")
+    students = relationship("User", back_populates="faculty", cascade="save-update")
     courses = relationship("Course", back_populates="faculty", cascade="all, delete-orphan")

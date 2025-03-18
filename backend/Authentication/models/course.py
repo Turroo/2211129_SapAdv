@@ -8,7 +8,7 @@ class Course(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True, nullable=False)
     faculty_id = Column(Integer, ForeignKey("faculties.id"), nullable=False)
-    teacher_id = Column(Integer, ForeignKey("teachers.id"), nullable=False)
+    teacher_id = Column(Integer, ForeignKey("teachers.id", ondelete="SET NULL"), nullable=True)
 
     faculty = relationship("Faculty", back_populates="courses")
     teacher = relationship("Teacher", back_populates="courses")
