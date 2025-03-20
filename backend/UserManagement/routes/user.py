@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from database.database import get_db
 from passlib.context import CryptContext
@@ -43,6 +44,15 @@ def update_user_profile(
     db.refresh(db_user)
     
     return db_user
+def reset_sequence(db: Session, table_name: str, column_name: str):
+    """ Reset the sequence to the max ID in the table. """
+    db.execute(text(f"""
+        SELECT setval(pg_get_serial_sequence('{table_name}', '{column_name}'), 
+                      COALESCE((SELECT MAX({column_name}) FROM {table_name}) + 1, 1), false)
+    """))
+    db.commit()
+
+
 
 # API per cambiare la password di un utente
 @router.put("/update-password")
@@ -76,16 +86,18 @@ def delete_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """ Permette all'utente autenticato di cancellare il proprio account e tutti i suoi dati. """
-    
-    # Trova l'utente nel database
+    """ Deletes the user and resets the sequence. """
+
     db_user = db.query(User).filter(User.id == current_user.id).first()
     
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Rimuovi l'utente da tutte le tabelle (relazioni e dati collegati)
     db.delete(db_user)
     db.commit()
+    
+    # Reset sequence after deletion
+    reset_sequence(db, "users", "id")
 
     return {"message": "User account deleted successfully"}
+

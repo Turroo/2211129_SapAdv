@@ -1,5 +1,6 @@
 from datetime import datetime, date
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from database.database import get_db
@@ -13,6 +14,15 @@ from auth.auth import get_current_user  # Per autenticazione admin
 from fastapi.encoders import jsonable_encoder
 from typing import List  # ✅ Per specificare il tipo di lista nel response_model
 router = APIRouter()
+
+def reset_sequence(db: Session, table_name: str, column_name: str):
+    """ Reset the sequence to the max ID in the table. """
+    db.execute(text(f"""
+        SELECT setval(pg_get_serial_sequence('{table_name}', '{column_name}'), 
+                      COALESCE((SELECT MAX({column_name}) FROM {table_name}) + 1 , 1), false)
+    """))
+    db.commit()
+
 
 # 📌 Ottenere tutti i corsi
 @router.get("/", response_model=list[CourseResponse])
@@ -182,6 +192,8 @@ def delete_review(review_id: int, db: Session = Depends(get_db), current_user=De
 
     db.delete(review)
     db.commit()
+
+    reset_sequence(db, "reviews", "id")
 
     return {"message": "Review deleted successfully"}
 

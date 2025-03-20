@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+from sqlalchemy import text
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
@@ -14,6 +15,16 @@ from bson.objectid import ObjectId
 from io import BytesIO
 
 router = APIRouter()
+
+
+def reset_sequence(db, table_name, column_name):
+    """ Reset the sequence to the next available ID, avoiding conflicts. """
+    db.execute(text(f"""
+        SELECT setval(pg_get_serial_sequence('{table_name}', '{column_name}'), 
+                      COALESCE((SELECT MAX({column_name}) FROM {table_name}) + 1, 1), false)
+    """))
+    db.commit()
+
 
 # 🔍 **1. Ottenere gli appunti per un corso**
 @router.get("/{course_id}", response_model=list[NoteResponse])
@@ -98,6 +109,8 @@ def delete_note(note_id: int, db: Session = Depends(get_db), current_user=Depend
     # **Elimina il record dell'appunto dal database PostgreSQL**
     db.delete(note)
     db.commit()
+
+    reset_sequence(db, "notes", "id")
     
     return {"message": "Note and associated file deleted successfully."}
 
@@ -197,6 +210,8 @@ def delete_rating(
 
     db.delete(rating)
     db.commit()
+
+    reset_sequence(db, "note_ratings", "id")
 
     return {"message": "Rating deleted successfully."}
 

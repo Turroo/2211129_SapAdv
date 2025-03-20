@@ -3,52 +3,132 @@ from fastapi.security import HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
 from routes.course import router as course_router
 from models.teacher import Teacher
+from models.faculty import Faculty
+from models.course import Course
+from models.user import User
+from models.note import Note
+from models.review import Review  # ⚠️ Corretto: le review ora sono sui corsi
+from models.note_ratings import NoteRating
+from datetime import datetime
 from database.database import engine, Base, SessionLocal
+from sqlalchemy import text
+import bcrypt
 
 app = FastAPI()
 security = HTTPBearer()
 
-# Creazione delle tabelle
-print("Initializing Courses Service database...")
-Base.metadata.create_all(bind=engine)
-print("Courses Service Database initialized successfully!")
+def reset_all_sequences():
+    db = SessionLocal()
+    """ Reset di tutte le sequenze del database basandosi sui valori attuali delle tabelle. """
+    sequences = db.execute(text("""
+        SELECT table_name, column_name
+        FROM information_schema.columns
+        WHERE column_default LIKE 'nextval%'
+    """)).fetchall()
 
-# Funzione per popolare la tabella `teachers`
-def populate_teachers():
-    db = SessionLocal()  # Crea una nuova sessione
+    for table, column in sequences:
+        db.execute(text(f"""
+            SELECT setval(pg_get_serial_sequence('{table}', '{column}'), 
+                          COALESCE((SELECT MAX({column}) + 1 FROM {table}), 1), false)
+        """))
     
+    db.commit()
+
+
+# Funzione per hashare la password
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+# Funzione per popolare il database
+def populate_database():
+    db = SessionLocal()
     try:
-        existing_teachers = db.query(Teacher).count()
-        if existing_teachers > 0:
-            print("⚠️ I professori sono già stati inseriti nel database.")
-            return
-        
-        teachers_data = [
-            {"id": 1, "name": "Marco Rossi"},
-            {"id": 2, "name": "Giulia Bianchi"},
-            {"id": 3, "name": "Luca Verdi"},
-            {"id": 4, "name": "Francesca Neri"},
-            {"id": 5, "name": "Antonio Esposito"},
-        ]
+        # ✅ **Popoliamo le Facoltà**
+        if db.query(Faculty).count() == 0:
+            faculties = [
+                Faculty(id=1, name="Ingegneria Informatica"),
+                Faculty(id=2, name="Matematica e Fisica"),
+            ]
+            db.add_all(faculties)
+            db.commit()
+            print("✅ Facoltà inserite con successo!")
 
-        for teacher_data in teachers_data:
-            teacher = Teacher(id=teacher_data["id"], name=teacher_data["name"])
-            db.add(teacher)
+        # ✅ **Popoliamo i Docenti**
+        if db.query(Teacher).count() == 0:
+            teachers = [
+                Teacher(id=1, name="Prof. Mario Rossi"),
+                Teacher(id=2, name="Prof.ssa Laura Bianchi"),
+                Teacher(id=3, name="Prof. Giovanni Verdi"),
+                Teacher(id=4, name="Prof.ssa Anna Neri"),
+            ]
+            db.add_all(teachers)
+            db.commit()
+            print("✅ Professori inseriti con successo!")
 
-        db.commit()  # Salva le modifiche
+        # ✅ **Popoliamo i Corsi**
+        if db.query(Course).count() == 0:
+            courses = [
+                Course(id=1, name="Algoritmi e Strutture Dati", faculty_id=1, teacher_id=1),
+                Course(id=2, name="Analisi Matematica 1", faculty_id=2, teacher_id=2),
+                Course(id=3, name="Meccanica Quantistica", faculty_id=2, teacher_id=3),
+            ]
+            db.add_all(courses)
+            db.commit()
+            print("✅ Corsi inseriti con successo!")
+
+        # ✅ **Popoliamo gli Utenti**
+        if db.query(User).count() == 0:
+            users = [
+                User(id=1, email="user1@example.com", hashed_password=hash_password("example"), is_admin=True, first_name="Alice", last_name="Rossi", birth_date="2000-05-12", city="Roma", faculty_id=1),
+                User(id=2, email="user2@example.com", hashed_password=hash_password("example"), is_admin=False, first_name="Bob", last_name="Bianchi", birth_date="1999-07-24", city="Milano", faculty_id=2),
+                User(id=3, email="user3@example.com", hashed_password=hash_password("example"), is_admin=False, first_name="Charlie", last_name="Verdi", birth_date="2001-02-18", city="Napoli", faculty_id=1),
+            ]
+            db.add_all(users)
+            db.commit()
+            print("✅ Utenti inseriti con successo!")
+
+        # ✅ **Popoliamo le Note**
+        if db.query(Note).count() == 0:
+            notes = [
+                Note(id=1, course_id=1, student_id=1, file_id="file123", description="Appunti su Algoritmi e Strutture Dati", created_at=datetime.utcnow()),
+                Note(id=2, course_id=2, student_id=2, file_id="file456", description="Esercizi svolti di Analisi Matematica 1", created_at=datetime.utcnow()),
+            ]
+            db.add_all(notes)
+            db.commit()
+            print("✅ Note inserite con successo!")
+
+        # ✅ **Popoliamo le Valutazioni delle Note**
+        if db.query(NoteRating).count() == 0:
+            note_ratings = [
+                NoteRating(id=1, note_id=1, student_id=2, rating=5, comment="Appunti molto chiari, grazie!", created_at=datetime.utcnow()),
+                NoteRating(id=2, note_id=2, student_id=3, rating=4, comment="Utile ma manca qualche passaggio.", created_at=datetime.utcnow()),
+            ]
+            db.add_all(note_ratings)
+            db.commit()
+            print("✅ Valutazioni delle note inserite con successo!")
+
+        # ✅ **Popoliamo le Recensioni dei Corsi**
+        if db.query(Review).count() == 0:
+            reviews = [
+                Review(id=1, course_id=1, student_id=1, rating_clarity=5, rating_feasibility=4, rating_availability=5, comment="Corso molto interessante e ben strutturato.", created_at=datetime.utcnow().date()),
+                Review(id=2, course_id=2, student_id=2, rating_clarity=3, rating_feasibility=3, rating_availability=4, comment="Analisi è sempre difficile, ma il professore spiega bene.", created_at=datetime.utcnow().date()),
+            ]
+            db.add_all(reviews)
+            db.commit()
+            print("✅ Recensioni dei corsi inserite con successo!")
+    
     except Exception as e:
-        db.rollback()  # Se c'è un errore, annulla la transazione
-        print(f"Errore durante l'inserimento dei professori: {e}")
+        db.rollback()
+        print(f"⚠️ Errore durante la popolazione del database: {e}")
     finally:
-        db.close()  # Chiudi la connessione al database
+        db.close()
 
-
-
-# Popoliamo i professori solo se necessario
+# Esegui la popolazione del database
 try:
-    populate_teachers()
+    populate_database()
+    reset_all_sequences()
 except Exception as e:
-    print(f"⚠️ Errore durante la popolazione dei professori: {e}")
+    print(f"⚠️ Errore durante l'inizializzazione del database: {e}")
 
 # Configurazione CORS
 app.add_middleware(
@@ -61,6 +141,7 @@ app.add_middleware(
 
 # Inclusione delle route specifiche per la gestione dei corsi
 app.include_router(course_router, prefix="/courses")
+
 
 @app.get("/")
 def root():

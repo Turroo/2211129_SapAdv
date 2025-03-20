@@ -79,7 +79,7 @@ services:
       - app_network
 
   notes:
-    build: ./NotesManagement  # Percorso corretto per il Dockerfile del Course Service
+    build: ./NotesManagement  # Percorso corretto per il Dockerfile del Notes Service
     container_name: notes_service
     restart: always
     depends_on:
@@ -89,6 +89,20 @@ services:
       DATABASE_URL: postgresql://postgres:admin@db/sapienza_advisor
     ports:
       - "8004:8004"
+    networks:
+      - app_network
+  
+  admin:
+    build: ./AdminManagement  # Percorso corretto per il Dockerfile del Admin Service
+    container_name: admin_service
+    restart: always
+    depends_on:
+      - db
+      - mongodb
+    environment:
+      DATABASE_URL: postgresql://postgres:admin@db/sapienza_advisor
+    ports:
+      - "8005:8005"
     networks:
       - app_network
 
