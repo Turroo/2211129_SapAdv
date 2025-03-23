@@ -8,8 +8,10 @@ from models.course import Course
 from models.review import Review
 from models.user import User
 from models.teacher import Teacher
+from models.report import Report
 from schemas.course import CourseCreate, CourseResponse
 from schemas.review import ReviewCreate, ReviewResponse
+from schemas.report import ReportCreate, ReportResponse
 from auth.auth import get_current_user  # Per autenticazione admin
 from fastapi.encoders import jsonable_encoder
 from typing import List  # ✅ Per specificare il tipo di lista nel response_model
@@ -219,3 +221,40 @@ def get_course_ratings(course_id: int, db: Session = Depends(get_db)):
         "average_feasibility": avg_feasibility,
         "average_availability": avg_availability
     }
+
+@router.post("/reports", response_model=ReportResponse)
+def create_report(report: ReportCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if not report.id_review and not report.id_note:
+        raise HTTPException(status_code=400, detail="A report must be linked to either a review or a note.")
+    
+    new_report = Report(
+        id_review=report.id_review,
+        id_note=report.id_note,
+        id_user=current_user.id,
+        reason=report.reason
+    )
+
+    db.add(new_report)
+    db.commit()
+    db.refresh(new_report)
+    return new_report
+
+@router.get("/reports", response_model=List[ReportResponse])
+def get_all_reports(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Only admins can view reports.")
+
+    return db.query(Report).all()
+
+@router.delete("/{report_id}")
+def delete_report(report_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Only admins can delete reports.")
+    
+    report = db.query(Report).filter(Report.id_report == report_id).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found.")
+
+    db.delete(report)
+    db.commit()
+    return {"message": "Report deleted successfully."}

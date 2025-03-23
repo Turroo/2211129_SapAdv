@@ -19,3 +19,4 @@ class User(Base):
     notes = relationship("Note", back_populates="student", cascade="all, delete-orphan")
     reviews = relationship("Review", back_populates="student", cascade="all, delete-orphan")  # Relazione con le recensioni scritte
     ratings = relationship("NoteRating", back_populates="student", cascade="all, delete-orphan")
+    reports = relationship("Report", back_populates="user")

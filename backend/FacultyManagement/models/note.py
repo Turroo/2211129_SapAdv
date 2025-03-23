@@ -17,3 +17,4 @@ class Note(Base):
     course = relationship("Course", back_populates="notes")
     student = relationship("User", back_populates="notes")
     ratings = relationship("NoteRating", back_populates="note", cascade="all, delete-orphan")
+    reports = relationship("Report", back_populates="note", cascade="all, delete")

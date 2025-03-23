@@ -16,3 +16,4 @@ class Review(Base):
 
     course = relationship("Course", back_populates="reviews")
     student = relationship("User", back_populates="reviews")
+    reports = relationship("Report", back_populates="review", cascade="all, delete")

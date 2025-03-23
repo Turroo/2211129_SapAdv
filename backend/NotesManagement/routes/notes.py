@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from sqlalchemy import text
+from typing import List
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
@@ -8,8 +9,11 @@ from database.mongo import fs
 from models.note import Note
 from models.course import Course
 from models.note_ratings import NoteRating
+from models.user import User
+from models.report import Report
 from schemas.note import NoteCreate, NoteResponse
 from schemas.rating import NoteRatingCreate, NoteRatingUpdate, NoteRatingResponse
+from schemas.report import ReportCreate, ReportResponse
 from auth.auth import get_current_user
 from bson.objectid import ObjectId
 from io import BytesIO
@@ -311,4 +315,41 @@ def get_sorted_reviews(note_id: int, order: str = "desc", db: Session = Depends(
         reviews_query = reviews_query.order_by(NoteRating.rating.desc())
 
     return reviews_query.all()
+
+@router.post("/reports", response_model=ReportResponse)
+def create_report(report: ReportCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if not report.id_review and not report.id_note:
+        raise HTTPException(status_code=400, detail="A report must be linked to either a review or a note.")
+    
+    new_report = Report(
+        id_review=report.id_review,
+        id_note=report.id_note,
+        id_user=current_user.id,
+        reason=report.reason
+    )
+
+    db.add(new_report)
+    db.commit()
+    db.refresh(new_report)
+    return new_report
+
+@router.get("/reports", response_model=List[ReportResponse])
+def get_all_reports(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Only admins can view reports.")
+
+    return db.query(Report).all()
+
+@router.delete("/reports/{report_id}")
+def delete_report(report_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Only admins can delete reports.")
+    
+    report = db.query(Report).filter(Report.id_report == report_id).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found.")
+
+    db.delete(report)
+    db.commit()
+    return {"message": "Report deleted successfully."}
 
