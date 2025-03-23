@@ -318,9 +318,10 @@ def get_sorted_reviews(note_id: int, order: str = "desc", db: Session = Depends(
 
 @router.post("/reports", response_model=ReportResponse)
 def create_report(report: ReportCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    if not report.id_review and not report.id_note:
-        raise HTTPException(status_code=400, detail="A report must be linked to either a review or a note.")
-    
+    # Permette solo uno tra id_review e id_note
+    if (report.id_review is None and report.id_note is None) or (report.id_review is not None and report.id_note is not None):
+        raise HTTPException(status_code=400, detail="You must provide either id_review or id_note, but not both.")
+
     new_report = Report(
         id_review=report.id_review,
         id_note=report.id_note,
@@ -332,6 +333,7 @@ def create_report(report: ReportCreate, db: Session = Depends(get_db), current_u
     db.commit()
     db.refresh(new_report)
     return new_report
+
 
 @router.get("/reports", response_model=List[ReportResponse])
 def get_all_reports(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

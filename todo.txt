@@ -2,24 +2,4 @@ Missing API:
 
 -Auth:
 	- google sign up + login (LEO?)
-	
--CourseMGMT
-	- get descending/ascending list of every course (for every avg) (like a filter, maybe it is better to do that on the frontend?) + add USER STORY
-	- add the fact that the student can report a review of a course
 
--NotesMGMT
-	- add the fact that the student can report a note
-
--Report
-	- everybody can report a review and a note
-	- when a review or a note is reported, it's added to a table "Report" (id_report, id_review(nullabre=true), id_note(nullable=true), id_user, reason, datetime)
-	- only the admin can check the report table and he has the ability to delete the review or the note or the report, if the report doesn't make sense
-
--AdminMGMT
-	- create a microservice for the admin
-	- in this microservice the admin can:
-		- manage user accounts (view and delete) (getUserDetail) (deleteUser)
-		- review and monitorate reports (getReports) (deleteReport)
-		- manage review/notes (getReviews) (getNotes) (deleteReview) (deleteNote)
-		- manage faculties and courses (getFaculties) (getCoursesByFaculty) (addFaculty) (deleteFaculty) (addCourse) (deleteCourse) 
-		- manage teachers (getTeacher) (getTeacherByCourse) (deleteTeacher)

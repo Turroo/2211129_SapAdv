@@ -9,6 +9,7 @@ from models.course import Course
 from models.teacher import Teacher
 from models.note import Note
 from models.review import Review
+from models.report import Report
 from database.mongo import fs
 from auth.auth import get_current_user
 from models.note_ratings import NoteRating
@@ -18,8 +19,10 @@ from schemas.admin import (
     ReviewResponse, ReviewDeleteResponse,
     FacultyResponse, FacultyCreate,
     CourseResponse, CourseCreate,
-    TeacherResponse, NoteRatingResponse, NoteRatingDeleteResponse, TeacherCreate
+    TeacherResponse, NoteRatingResponse, NoteRatingDeleteResponse, TeacherCreate,
 )
+
+from schemas.report import ReportResponse
 
 router = APIRouter()
 
@@ -247,3 +250,24 @@ def add_course(course: CourseCreate, db: Session = Depends(get_db), admin=Depend
     db.commit()
     db.refresh(new_course)
     return new_course
+
+
+@router.get("/reports", response_model=List[ReportResponse])
+def get_all_reports(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Only admins can view reports.")
+
+    return db.query(Report).all()
+
+@router.delete("/reports/{report_id}")
+def delete_report(report_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Only admins can delete reports.")
+    
+    report = db.query(Report).filter(Report.id_report == report_id).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found.")
+
+    db.delete(report)
+    db.commit()
+    return {"message": "Report deleted successfully."}
