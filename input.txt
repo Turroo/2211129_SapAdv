@@ -1,8 +1,8 @@
 # SYSTEM DESCRIPTION:
 
-The proposed project aims to create an innovative academic platform tailored for university students, particularly those enrolled at Sapienza University. The system is designed to enhance students' academic experience by providing tools for course evaluation, collaborative learning, and resource sharing. By allowing students to log in with their academic credentials and register under their respective degree programs, the platform ensures a personalized and structured environment.
+The proposed project aims to create an innovative academic platform tailored for university students, particularly those enrolled at Sapienza University. The system is designed to enhance students' academic experience by providing tools for course evaluation, collaborative learning, and resource sharing. By allowing students to log in and register under their respective degree programs, the platform ensures a personalized and structured environment.
 
-The system's core features include a comprehensive view of all courses associated with a student's degree, enabling them to rate and review courses based on multiple factors. These ratings are updated annually, providing year-specific insights into course quality and relevance. Additionally, students can contribute to the academic community by uploading notes with descriptions, which can be rated by peers to ensure quality and usability.
+The system's core features include a comprehensive view of all courses associated with a student's degree, enabling them to rate and review courses based on multiple factors. Additionally, students can contribute to the academic community by uploading notes with descriptions, which can be rated by peers to ensure quality and usability.
 
 Potential users of the system include undergraduate and graduate students, academic advisors, and faculty members interested in course feedback. Key use cases involve course selection guidance, collaborative note sharing and peer-reviewed resource enhancement. The system’s features aim to streamline academic workflows while fostering a supportive and collaborative learning environment.
 
