@@ -11,7 +11,7 @@ Potential users of the system include undergraduate and graduate students, acade
 1) As a User, I want to register to the site so I can access it.  
 2) As a User, I want to login to the site so I can access it.  
 3) As a User, I want to be able to delete my account and all whole data connected to it, so that none of my data is present anymore in the website.  
-4) As a User, I want to reload the site many times avoiding to put the credentials everytime a reload occurs, so I can use the site.  
+4) As a User, I want to reload the site many times avoiding to put the credentials every time a reload occurs, so I can use the site.  
 5) As a User, I want to be able to logout, so no one else uses my account.  
 6) As a User, I want to check my personal information.  
 7) As a User, I want to edit my personal information, as some of my info may change.  
@@ -31,7 +31,7 @@ Potential users of the system include undergraduate and graduate students, acade
 21) As a User, I want to rate the uploaded material, so that the best resources are highlighted.  
 22) As a User, I want to report inappropriate or incorrect material, so that the administrators can review and take necessary actions.  
 23) As an Administrator, I want to login to the site, so I can access it.  
-24) As an Administrator, I want to reload the site many times avoiding to put the credentials everytime a reload occurs, so I can use the site.  
+24) As an Administrator, I want to reload the site many times avoiding to put the credentials every time a reload occurs, so I can use the site.  
 25) As an Administrator, I want to be able to logout, so no one else uses my account.  
 26) As an Administrator, I want to manage user accounts (view or delete), so that I can ensure a safe and secure environment.  
 27) As an Administrator, I want to review and moderate course ratings and reviews, so that inappropriate content is removed.  
