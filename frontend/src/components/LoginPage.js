@@ -13,20 +13,32 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
     if (!email || !password) {
       setError('Please fill in both email and password.');
       return;
     }
-
     setLoading(true);
     try {
+      // Effettua la richiesta di login
       const response = await axios.post(`${process.env.REACT_APP_AUTH_API_URL}/auth/login`, {
         email,
         password,
       });
-      localStorage.setItem('access_token', response.data.access_token);
-      navigate('/dashboard');
+      const token = response.data.access_token;
+      localStorage.setItem('access_token', token);
+
+      // Recupera i dettagli dell'utente (endpoint /me del servizio user)
+      const userResponse = await axios.get(`${process.env.REACT_APP_USER_API_URL}/users/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const userData = userResponse.data;
+      
+      // Se il faculty_id non è impostato, reindirizza alla pagina di selezione della facoltà
+      if (!userData.faculty_id) {
+        navigate('/faculty-selection');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError(err.response?.data?.detail || 'Login failed');
     } finally {
@@ -37,7 +49,6 @@ const LoginPage = () => {
   return (
     <div className="login-page">
       <div className="login-container">
-        {/* Aggiungi il logo */}
         <img src="/logo.png" alt="SapienzaAdvisor Logo" className="logo" />
         {error && <div className="error">{error}</div>}
         <form onSubmit={handleSubmit}>

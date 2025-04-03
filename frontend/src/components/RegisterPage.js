@@ -16,13 +16,15 @@ const RegisterPage = () => {
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setUser({...user, [e.target.name]: e.target.value});
+    setUser({ ...user, [e.target.name]: e.target.value });
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
+      // Registra l'utente
       await axios.post(`${process.env.REACT_APP_AUTH_API_URL}/auth/register`, user);
+      // Dopo la registrazione, reindirizza alla pagina di login
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.detail || 'Registration failed');
@@ -32,7 +34,6 @@ const RegisterPage = () => {
   return (
     <div className="register-page">
       <div className="register-container">
-        {/* Aggiungi il logo */}
         <img src="/logo.png" alt="SapienzaAdvisor Logo" className="logo" />
         {error && <div className="error">{error}</div>}
         <form onSubmit={handleRegister}>

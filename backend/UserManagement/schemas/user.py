@@ -29,12 +29,13 @@ class UserResponse(BaseModel):
     email: str
     first_name: str
     last_name: str
-    birth_date: date  # Ora restituisce una data reale
+    birth_date: date
     city: str
     is_admin: bool
-    faculty_id : int = None
-    access_token: str
-    token_type: str
+    faculty_id: Optional[int] = None
+    access_token: Optional[str] = None
+    token_type: Optional[str] = None  
+
 
     class Config:
         from_attributes = True

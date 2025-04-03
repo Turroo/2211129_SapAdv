@@ -5,6 +5,7 @@ from database.database import get_db
 from passlib.context import CryptContext
 from models.user import User
 from schemas.user import UserUpdate
+from schemas.user import UserResponse
 from auth.auth import get_current_user
 
 router = APIRouter()
@@ -79,6 +80,12 @@ def update_password(
     db.refresh(db_user)
 
     return {"message": "Password updated successfully"}
+
+@router.get("/me", response_model=UserResponse)
+def get_current_user_details(current_user: User = Depends(get_current_user)):
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return current_user
 
 #  API per eliminare completamente un utente
 @router.delete("/delete")
