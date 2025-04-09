@@ -11,6 +11,7 @@ class NoteCreate(NoteBase):
 
 class NoteResponse(NoteBase):
     id: int
+    course_id : int
     student_id: int
     file_id: str
     created_at: datetime

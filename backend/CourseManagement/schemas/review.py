@@ -23,6 +23,7 @@ class ReviewCreate(BaseModel):
 
 class ReviewResponse(BaseModel):
     id: int
+    course_id: int
     created_at: date
     rating_clarity: float
     rating_feasibility: float

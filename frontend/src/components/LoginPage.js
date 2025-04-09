@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import './LoginPage.scss';
+import { Container, Box, Typography, TextField, Button, Alert } from '@mui/material';
+import { styled } from '@mui/system';
+
+const Logo = styled('img')({
+  maxWidth: '150px',
+  marginBottom: '1.5rem',
+  display: 'block',
+  marginLeft: 'auto',
+  marginRight: 'auto',
+});
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -27,7 +36,7 @@ const LoginPage = () => {
       const token = response.data.access_token;
       localStorage.setItem('access_token', token);
 
-      // Recupera i dettagli dell'utente (endpoint /me del servizio user)
+      // Recupera i dettagli dell'utente (endpoint /users/me)
       const userResponse = await axios.get(`${process.env.REACT_APP_USER_API_URL}/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -37,7 +46,7 @@ const LoginPage = () => {
       if (!userData.faculty_id) {
         navigate('/faculty-selection');
       } else {
-        navigate('/dashboard');
+        navigate('/dashboard/home');
       }
     } catch (err) {
       setError(err.response?.data?.detail || 'Login failed');
@@ -47,42 +56,70 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="login-page">
-      <div className="login-container">
-        <img src="/logo.png" alt="SapienzaAdvisor Logo" className="logo" />
-        {error && <div className="error">{error}</div>}
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input 
-              type="email"
-              id="email"
-              name="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              required 
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input 
-              type="password"
-              id="password"
-              name="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              required 
-            />
-          </div>
-          <button type="submit" className="btn" disabled={loading}>
+    <Container maxWidth="xs" sx={{ mt: 8 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: 3,
+          boxShadow: 3,
+          borderRadius: 2,
+          backgroundColor: '#FFFFFF',
+        }}
+      >
+        <Logo src="/logo.png" alt="SapienzaAdvisor Logo" />
+        <Typography component="h1" variant="h5" sx={{ color: '#0D47A1', mb: 2 }}>
+          SapienzaAdvisor Login
+        </Typography>
+        {error && (
+          <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email"
+            name="email"
+            autoComplete="email"
+            autoFocus
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Password"
+            type="password"
+            id="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            disabled={loading}
+            sx={{ mt: 3, mb: 2, backgroundColor: '#0D47A1' }}
+          >
             {loading ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
-        <p>New account? <Link to="/register">Register</Link></p>
-      </div>
-    </div>
+          </Button>
+          <Typography variant="body2" align="center">
+            New account?{' '}
+            <Link to="/register" style={{ textDecoration: 'none', color: '#0D47A1' }}>
+              Register
+            </Link>
+          </Typography>
+        </Box>
+      </Box>
+    </Container>
   );
 };
 
