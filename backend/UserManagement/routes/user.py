@@ -5,6 +5,7 @@ from database.database import get_db
 from passlib.context import CryptContext
 from models.user import User
 from schemas.user import UserUpdate
+from schemas.user import UpdatePasswordRequest
 from schemas.user import UserResponse
 from auth.auth import get_current_user
 
@@ -58,8 +59,7 @@ def reset_sequence(db: Session, table_name: str, column_name: str):
 # API per cambiare la password di un utente
 @router.put("/update-password")
 def update_password(
-    old_password: str,  # ✅ Richiede la vecchia password
-    new_password: str,  # ✅ E la nuova password
+    request: UpdatePasswordRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -70,11 +70,11 @@ def update_password(
         raise HTTPException(status_code=404, detail="User not found")
 
     # 🔹 Verifica che la vecchia password sia corretta
-    if not pwd_context.verify(old_password, db_user.hashed_password):
+    if not pwd_context.verify(request.old_password, db_user.hashed_password):
         raise HTTPException(status_code=400, detail="Old password is incorrect")
 
     # 🔹 Aggiorna la password con l'hash della nuova
-    db_user.hashed_password = pwd_context.hash(new_password)
+    db_user.hashed_password = pwd_context.hash(request.new_password)
 
     db.commit()
     db.refresh(db_user)

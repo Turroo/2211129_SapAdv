@@ -5,6 +5,11 @@ import RegisterPage from './components/RegisterPage';
 import FacultySelectionPage from './components/FacultySelectionPage';
 import Dashboard from './components/Dashboard';
 import DashboardHome from './components/DashboardHome';
+import MyProfile from './components/MyProfile';
+import MyProfileEdit from './components/MyProfileEdit';
+import Faculties from './components/Faculties';
+import SingleFaculty from './components/SingleFaculty';
+import SingleCourse from './components/SingleCourse';
 import './styles/_variables.scss'; // Importa il file SCSS con la palette e la regola no-cursor
 
 function App() {
@@ -20,6 +25,11 @@ function App() {
             <Route index element={<DashboardHome />} />
             {/* Explicit mapping for "/dashboard/home" */}
             <Route path="home" element={<DashboardHome />} />
+            <Route path="my-profile" element={<MyProfile />} />
+            <Route path="my-profile/edit" element={<MyProfileEdit />} />
+            <Route path="faculties" element={<Faculties />} />
+            <Route path="faculties/:facultyId/courses" element={<SingleFaculty />} />
+            <Route path="courses/:courseId" element={<SingleCourse />} />
           </Route>
         </Routes>
       </Router>

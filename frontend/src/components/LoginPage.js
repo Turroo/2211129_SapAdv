@@ -70,7 +70,6 @@ const LoginPage = () => {
       >
         <Logo src="/logo.png" alt="SapienzaAdvisor Logo" />
         <Typography component="h1" variant="h5" sx={{ color: '#0D47A1', mb: 2 }}>
-          SapienzaAdvisor Login
         </Typography>
         {error && (
           <Alert severity="error" sx={{ width: '100%', mb: 2 }}>

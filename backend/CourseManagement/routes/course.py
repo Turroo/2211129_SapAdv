@@ -219,3 +219,10 @@ def delete_report(report_id: int, db: Session = Depends(get_db), current_user: U
     db.delete(report)
     db.commit()
     return {"message": "Report deleted successfully."}
+
+@router.get("/{course_id}/details", response_model=CourseResponse)
+def get_course_detail(course_id: int, db: Session = Depends(get_db)):
+    course = db.query(Course).filter(Course.id == course_id).first()
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+    return course

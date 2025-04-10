@@ -40,7 +40,7 @@ const FacultySelectionPage = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Dopo l'iscrizione, reindirizza alla dashboard
-      navigate('/dashboard');
+      navigate('/dashboard/home');
     } catch (err) {
       setError(err.response?.data?.detail || 'Enrollment failed. Please try again.');
     } finally {

@@ -117,15 +117,20 @@ services:
       - course
       - notes
       - admin
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules  # Mantiene le dipendenze installate nel container
     environment:
-      - REACT_APP_AUTH_API_URL=http://auth_service:8000
-      - REACT_APP_USER_API_URL=http://user_service:8001
-      - REACT_APP_FACULTY_API_URL=http://faculty_service:8002
-      - REACT_APP_COURSE_API_URL=http://course_service:8003
-      - REACT_APP_NOTES_API_URL=http://notes_service:8004
-      - REACT_APP_ADMIN_API_URL=http://admin_service:8005
+      - REACT_APP_AUTH_API_URL=http://localhost:8000
+      - REACT_APP_USER_API_URL=http://localhost:8001
+      - REACT_APP_FACULTY_API_URL=http://localhost:8002
+      - REACT_APP_COURSE_API_URL=http://localhost:8003
+      - REACT_APP_NOTES_API_URL=http://localhost:8004
+      - REACT_APP_ADMIN_API_URL=http://localhost:8005
+      - NODE_ENV=development
     ports:
-      - "3000:80"
+      - "3000:3000"
+    command: npm start
     networks:
       - app_network
 
