@@ -11,23 +11,24 @@ import {
   Divider,
   Button,
   TextField,
-  ListItemText,
+  IconButton,
 } from '@mui/material';
 import axios from 'axios';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
+import DownloadIcon from '@mui/icons-material/Download';
 
 const SingleCourse = () => {
   const { courseId } = useParams();
 
-  // Stato per i dettagli del corso
+  // Stati per i dettagli del corso
   const [courseName, setCourseName] = useState('');
   const [teacherName, setTeacherName] = useState('');
   const [courseFacultyId, setCourseFacultyId] = useState(null);
   const [loadingCourse, setLoadingCourse] = useState(true);
   const [errorCourse, setErrorCourse] = useState('');
 
-  // Stato per le medie dei voti del corso
+  // Stati per le medie dei voti del corso
   const [courseRatings, setCourseRatings] = useState({
     average_clarity: 0,
     average_feasibility: 0,
@@ -36,14 +37,20 @@ const SingleCourse = () => {
   const [loadingRatings, setLoadingRatings] = useState(true);
   const [errorRatings, setErrorRatings] = useState('');
 
-  // Stato per le recensioni del corso
+  // Stati per le recensioni del corso
   const [reviews, setReviews] = useState([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
   const [errorReviews, setErrorReviews] = useState('');
 
-  // Stato per il profilo utente (per controllare la faculty dell'utente)
+  // Stati per le note con i dettagli aggiuntivi (average rating e le valutazioni per ogni nota)
+  const [notesWithDetails, setNotesWithDetails] = useState([]);
+  const [loadingNotes, setLoadingNotes] = useState(true);
+  const [errorNotes, setErrorNotes] = useState('');
+
+  // Stato per il profilo utente (per verificare la faculty dell'utente)
   const [userFacultyId, setUserFacultyId] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
 
   // Stato per il form di aggiunta recensione
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -55,6 +62,11 @@ const SingleCourse = () => {
   });
   const [submittingReview, setSubmittingReview] = useState(false);
   const [errorSubmit, setErrorSubmit] = useState('');
+
+  // Stati per il form di rating nota (simile al Review Form)
+  const [noteRatingFormOpen, setNoteRatingFormOpen] = useState(null);
+  const [newNoteRating, setNewNoteRating] = useState(0);
+  const [newNoteComment, setNewNoteComment] = useState('');
 
   // Funzione per fetchare le recensioni
   const fetchReviews = async () => {
@@ -68,17 +80,71 @@ const SingleCourse = () => {
       setReviews(response.data);
     } catch (error) {
       if (error.response && error.response.status === 404) {
-        setReviews([]); // Nessuna recensione presente
+        setReviews([]);
+      } else {
+        console.error('Errore nel recupero delle recensioni:', error);
+        setErrorReviews('Errore nel recupero delle recensioni.');
       }
-      else{console.error('Errore nel recupero delle recensioni:', error);
-        setErrorReviews('Errore nel recupero delle recensioni.');}
-      
     } finally {
       setLoadingReviews(false);
     }
   };
 
-  // Fetch dettagli del corso e, se il teacher è presente, fetch dei dettagli del teacher
+  // Funzione per fetchare le note e per ciascuna ottenere average rating e le valutazioni
+  const fetchNotesWithDetails = async () => {
+    try {
+      setLoadingNotes(true);
+      const token = localStorage.getItem('access_token');
+      const notesResponse = await axios.get(
+        `${process.env.REACT_APP_NOTES_API_URL}/notes/${courseId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const notes = notesResponse.data;
+      const notesDetailed = await Promise.all(
+        notes.map(async (note) => {
+          let average_rating = 0;
+          let ratings = [];
+          try {
+            const avgResponse = await axios.get(
+              `${process.env.REACT_APP_NOTES_API_URL}/notes/notes/${note.id}/average-rating`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            average_rating = avgResponse.data.average_rating || 0;
+          } catch (error) {
+            if (!(error.response && error.response.status === 404)) {
+              console.error(`Errore per la nota ${note.id} average rating:`, error);
+            }
+            average_rating = 0;
+          }
+          try {
+            const ratingsResponse = await axios.get(
+              `${process.env.REACT_APP_NOTES_API_URL}/notes/notes/${note.id}/reviews`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            ratings = ratingsResponse.data;
+          } catch (error) {
+            if (!(error.response && error.response.status === 404)) {
+              console.error(`Errore per la nota ${note.id} reviews:`, error);
+            }
+            ratings = [];
+          }
+          return { ...note, average_rating, ratings };
+        })
+      );
+      setNotesWithDetails(notesDetailed);
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        setNotesWithDetails([]);
+      } else {
+        console.error('Errore nel recupero delle note:', error);
+        setErrorNotes('Errore nel recupero delle note.');
+      }
+    } finally {
+      setLoadingNotes(false);
+    }
+  };
+
+  // Fetch dei dettagli del corso e del teacher tramite l'endpoint /courses/{courseId}/teacher
   useEffect(() => {
     const fetchCourseDetails = async () => {
       try {
@@ -91,7 +157,6 @@ const SingleCourse = () => {
         const courseData = response.data;
         setCourseName(courseData.name);
         setCourseFacultyId(courseData.faculty_id);
-        // Se abbiamo l'id del teacher, eseguiamo una chiamata aggiuntiva per ottenere nome e cognome
         if (courseData.teacher_id) {
           await fetchTeacherDetails(courseData.teacher_id);
         } else {
@@ -108,15 +173,18 @@ const SingleCourse = () => {
     const fetchTeacherDetails = async () => {
       try {
         const token = localStorage.getItem('access_token');
-        // Assumi che l'endpoint per ottenere i dettagli del teacher sia:
-        // GET /teachers/{teacherId} su REACT_APP_TEACHER_API_URL
         const response = await axios.get(
           `${process.env.REACT_APP_COURSE_API_URL}/courses/${courseId}/teacher`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const teacherData = response.data;
-        // Se il teacher ha first_name e last_name
-        setTeacherName(`${teacherData.name}`);
+        if (teacherData.first_name && teacherData.last_name) {
+          setTeacherName(`${teacherData.first_name} ${teacherData.last_name}`);
+        } else if (teacherData.name) {
+          setTeacherName(teacherData.name);
+        } else {
+          setTeacherName("Unknown");
+        }
       } catch (error) {
         console.error("Errore nel recupero dei dettagli del teacher:", error);
         setTeacherName("Unknown");
@@ -126,28 +194,28 @@ const SingleCourse = () => {
     fetchCourseDetails();
   }, [courseId]);
 
-  // Fetch medie dei voti
+  // Fetch delle medie dei voti del corso
   useEffect(() => {
     const fetchRatings = async () => {
       try {
         setLoadingRatings(true);
         const token = localStorage.getItem('access_token');
         const response = await axios.get(
-          `${process.env.REACT_APP_COURSE_API_URL}/courses/${courseId}/ratings`,
+          `${process.env.REACT_APP_COURSE_API_URL}/courses/${courseId}/ratings?timestamp=${new Date().getTime()}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setCourseRatings(response.data);
       } catch (error) {
         if (error.response && error.response.status === 404) {
-          // Se non si trovano voti, impostiamo i valori a 0.
           setCourseRatings({
             average_clarity: 0,
             average_feasibility: 0,
             average_availability: 0,
           });
+        } else {
+          console.error('Errore nel recupero delle medie dei voti:', error);
+          setErrorRatings('Errore nel recupero dei voti.');
         }
-        else{console.error('Errore nel recupero delle medie dei voti:', error);
-        setErrorRatings('Errore nel recupero dei voti.');}
       } finally {
         setLoadingRatings(false);
       }
@@ -161,7 +229,12 @@ const SingleCourse = () => {
     fetchReviews();
   }, [courseId]);
 
-  // Fetch profilo utente
+  // Fetch delle note con dettagli
+  useEffect(() => {
+    fetchNotesWithDetails();
+  }, [courseId]);
+
+  // Fetch del profilo utente, salvando anche l'oggetto completo
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
@@ -172,6 +245,7 @@ const SingleCourse = () => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setUserFacultyId(response.data.faculty_id);
+        setCurrentUser(response.data);
       } catch (error) {
         console.error('Errore nel recupero dei dettagli utente:', error);
       } finally {
@@ -202,18 +276,64 @@ const SingleCourse = () => {
         newReview,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Dopo la POST, aggiorniamo l'elenco delle recensioni
       await fetchReviews();
-      
-      // Ripuliamo il form e nascondiamo il form
+      await fetchRatings();
       setNewReview({ rating_clarity: 0, rating_feasibility: 0, rating_availability: 0, comment: '' });
       setShowReviewForm(false);
-      await fetchRatings();
     } catch (error) {
       console.error('Errore durante l\'invio della recensione:', error);
       setErrorSubmit('Errore durante l\'invio della recensione.');
     } finally {
       setSubmittingReview(false);
+    }
+  };
+
+  // Handler per il download di una nota
+  const handleDownloadNote = async (noteId) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(
+        `${process.env.REACT_APP_NOTES_API_URL}/notes/download/${noteId}`,
+        { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' }
+      );
+      let fileName = 'note.pdf';
+      const disposition = response.headers['content-disposition'];
+      if (disposition && disposition.indexOf('filename=') !== -1) {
+        const fileNameMatch = disposition.match(/filename="?([^"]+)"?/);
+        if (fileNameMatch.length > 1) {
+          fileName = fileNameMatch[1];
+        }
+      }
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Errore durante il download della nota:', error);
+    }
+  };
+
+  // Handler per il submit del rating della nota (simile al Review Form)
+  const handleNoteRatingSubmit = async (e, noteId) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('access_token');
+      const payload = { note_id: noteId, rating: newNoteRating, comment: newNoteComment };
+      await axios.post(
+        `${process.env.REACT_APP_NOTES_API_URL}/notes/ratings`,
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      await fetchNotesWithDetails();
+      setNewNoteRating(0);
+      setNewNoteComment('');
+      setNoteRatingFormOpen(null);
+    } catch (error) {
+      console.error("Errore nel rating della nota:", error);
     }
   };
 
@@ -246,7 +366,7 @@ const SingleCourse = () => {
               <strong>{courseName}</strong>
             </Typography>
             <Typography variant="subtitle1">
-              {<strong>{teacherName}</strong> ? `Professor ${teacherName}` : "No teacher assigned"}
+              {teacherName ? `Professor ${teacherName}` : "No teacher assigned"}
             </Typography>
           </Box>
           <Box sx={{ position: 'absolute', right: 0, top: 0 }}>
@@ -271,15 +391,15 @@ const SingleCourse = () => {
           <Grid container spacing={2} justifyContent="center">
             <Grid item>
               <Typography variant="body1" align="center">Lessons Clarity</Typography>
-              <CustomRating value={courseRatings.average_clarity} />
+              <CustomRating value={courseRatings.average_clarity || 0} />
             </Grid>
             <Grid item>
               <Typography variant="body1" align="center">Exam Feasibility</Typography>
-              <CustomRating value={courseRatings.average_feasibility} />
+              <CustomRating value={courseRatings.average_feasibility || 0} />
             </Grid>
             <Grid item>
               <Typography variant="body1" align="center">Teacher Availability</Typography>
-              <CustomRating value={courseRatings.average_availability} />
+              <CustomRating value={courseRatings.average_availability || 0} />
             </Grid>
           </Grid>
         )}
@@ -308,15 +428,15 @@ const SingleCourse = () => {
                   <Grid container spacing={1}>
                     <Grid item xs={4}>
                       <Typography variant="caption">Lessons Clarity:</Typography>
-                      <CustomRating value={rev.rating_clarity} />
+                      <CustomRating value={rev.rating_clarity || 0} />
                     </Grid>
                     <Grid item xs={4}>
                       <Typography variant="caption">Exam Feasibility:</Typography>
-                      <CustomRating value={rev.rating_feasibility} />
+                      <CustomRating value={rev.rating_feasibility || 0} />
                     </Grid>
                     <Grid item xs={4}>
                       <Typography variant="caption">Teacher Availability:</Typography>
-                      <CustomRating value={rev.rating_availability} />
+                      <CustomRating value={rev.rating_availability || 0} />
                     </Grid>
                   </Grid>
                 </Box>
@@ -405,11 +525,6 @@ const SingleCourse = () => {
                 rows={3}
               />
             </Grid>
-            {errorSubmit && (
-              <Grid item xs={12}>
-                <Typography color="error">{errorSubmit}</Typography>
-              </Grid>
-            )}
             <Grid item xs={12} sx={{ textAlign: 'center' }}>
               <Button type="submit" variant="contained" disabled={submittingReview}>
                 {submittingReview ? 'Submitting...' : 'Submit Review'}
@@ -418,6 +533,98 @@ const SingleCourse = () => {
           </Grid>
         </Box>
       )}
+
+      <Divider sx={{ my: 2 }} />
+
+      {/* Sezione Notes */}
+      <Box sx={{ my: 3 }}>
+        <Typography variant="h5" gutterBottom>
+          Notes
+        </Typography>
+        {loadingNotes ? (
+          <Box sx={{ textAlign: 'center' }}>
+            <CircularProgress size={24} />
+          </Box>
+        ) : errorNotes ? (
+          <Typography color="error">{errorNotes}</Typography>
+        ) : notesWithDetails.length === 0 ? (
+          <Typography variant="body2">No notes available.</Typography>
+        ) : (
+          <List>
+            {notesWithDetails.map((note) => (
+              <ListItem key={note.id} sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                {/* Header della nota: nome, average rating e download */}
+                <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="subtitle1" component="div">
+                    <strong>{note.description}</strong>
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <CustomRating value={note.average_rating || 0} />
+                    <IconButton onClick={() => handleDownloadNote(note.id)}>
+                      <DownloadIcon />
+                    </IconButton>
+                  </Box>
+                </Box>
+                {/* Dettaglio delle valutazioni della nota */}
+                {note.ratings.length > 0 ? (
+                  note.ratings.map((r, index) => (
+                    <Box key={index} sx={{ mt: 1 }}>
+                      <Typography variant="caption" display="block">
+                        {new Date(r.created_at).toLocaleDateString()}
+                      </Typography>
+                      <Typography variant="caption" display="block" color="textSecondary">
+                        {r.comment || "No comment"}
+                      </Typography>
+                    </Box>
+                  ))
+                ) : (
+                  <Typography variant="caption" color="textSecondary">
+                    No ratings for this note.
+                  </Typography>
+                )}
+                <Divider sx={{ my: 1, width: '100%' }} />
+                {/* Sezione per il rating della nota (simile al Review Form) */}
+                {currentUser &&
+                  courseFacultyId !== null &&
+                  currentUser.faculty_id === courseFacultyId &&
+                  note.student_id !== currentUser.id && (
+                    <>
+                      <Button variant="text" onClick={() => setNoteRatingFormOpen(note.id)}>
+                        Rate Note
+                      </Button>
+                      {noteRatingFormOpen === note.id && (
+                        <Box component="form" onSubmit={(e) => handleNoteRatingSubmit(e, note.id)} sx={{ mt: 1, width: '100%' }}>
+                          <Rating
+                            name={`note-rating-${note.id}`}
+                            value={newNoteRating}
+                            precision={1}
+                            onChange={(event, newValue) => setNewNoteRating(newValue)}
+                            icon={<StarIcon sx={{ color: '#FFD700' }} />}
+                            emptyIcon={<StarBorderIcon />}
+                          />
+                          <TextField
+                            variant="outlined"
+                            size="small"
+                            placeholder="Add comment"
+                            value={newNoteComment}
+                            onChange={(e) => setNewNoteComment(e.target.value)}
+                            sx={{ ml: 1 }}
+                          />
+                          <Button type="submit" variant="contained" size="small" sx={{ ml: 1 }}>
+                            Submit
+                          </Button>
+                        </Box>
+                      )}
+                    </>
+                  )}
+              </ListItem>
+            ))}
+          </List>
+        )}
+        <Box sx={{ textAlign: 'center', my: 2 }}>
+          <Button variant="contained">Add Note</Button>
+        </Box>
+      </Box>
     </Box>
   );
 };

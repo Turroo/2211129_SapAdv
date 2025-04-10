@@ -9,11 +9,7 @@ from models.teacher import Teacher
 
 app = FastAPI()
 # Aggiungi il middleware CORS alla tua app FastAPI
-origins = [
-    "http://localhost:3000",  # Consenti richieste da questa origine (dove si trova il tuo frontend React)
-    "http://localhost:8004",  # Se hai bisogno di consentire anche il backend stesso
-    # Puoi aggiungere altre origini se necessario
-]
+origins =[""]
 
 # Middleware per CORS (per comunicare con il frontend)
 app.add_middleware(

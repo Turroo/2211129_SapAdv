@@ -125,7 +125,6 @@ def download_note(note_id: int, db: Session = Depends(get_db), current_user=Depe
     if not note:
         raise HTTPException(status_code=404, detail="Note not found.")
 
-    # **Verifica che l'utente appartenga alla facoltà del corso dell'appunto**
     if note.course.faculty_id != current_user.faculty_id:
         raise HTTPException(status_code=403, detail="You are not authorized to download notes for this course.")
 
@@ -133,9 +132,9 @@ def download_note(note_id: int, db: Session = Depends(get_db), current_user=Depe
     if not file:
         raise HTTPException(status_code=404, detail="File not found in storage.")
 
-    return StreamingResponse(BytesIO(file.read()), media_type=file.content_type, headers={
-        "Content-Disposition": f"attachment; filename={file.filename}"
-    })
+    response = StreamingResponse(BytesIO(file.read()), media_type=file.content_type)
+    response.headers["Content-Disposition"] = f"attachment; filename={file.filename}"
+    return response
 
 # ⭐ **6. Aggiungere una valutazione a una nota**
 @router.post("/ratings", response_model=NoteRatingResponse)
