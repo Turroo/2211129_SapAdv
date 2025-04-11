@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, Form
 from sqlalchemy import text
 from typing import List
 from fastapi.responses import StreamingResponse
@@ -38,18 +38,14 @@ def get_notes(course_id: int, db: Session = Depends(get_db), current_user=Depend
     if not course:
         raise HTTPException(status_code=404, detail="Course not found.")
 
-    # **Controllo che l'utente appartenga alla facoltà del corso**
-    if course.faculty_id != current_user.faculty_id:
-        raise HTTPException(status_code=403, detail="You are not authorized to view notes for this course.")
-
     notes = db.query(Note).filter(Note.course_id == course_id).all()
     return notes
 
 # 📤 **2. Caricare un nuovo appunto**
 @router.post("/", response_model=NoteResponse)
 def upload_note(
-    course_id: int,
-    description: str,
+    course_id: int = Form(...),
+    description: str = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)

@@ -17,6 +17,7 @@ import axios from 'axios';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import DownloadIcon from '@mui/icons-material/Download';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 const SingleCourse = () => {
   const { courseId } = useParams();
@@ -27,6 +28,13 @@ const SingleCourse = () => {
   const [courseFacultyId, setCourseFacultyId] = useState(null);
   const [loadingCourse, setLoadingCourse] = useState(true);
   const [errorCourse, setErrorCourse] = useState('');
+
+  // Stati per l'upload delle note
+  const [showNoteForm, setShowNoteForm] = useState(false);
+  const [newNoteFile, setNewNoteFile] = useState(null);
+  const [newNoteDescription, setNewNoteDescription] = useState('');
+  const [uploadingNote, setUploadingNote] = useState(false);
+  const [errorUploadNote, setErrorUploadNote] = useState('');
 
   // Stati per le medie dei voti del corso
   const [courseRatings, setCourseRatings] = useState({
@@ -42,12 +50,12 @@ const SingleCourse = () => {
   const [loadingReviews, setLoadingReviews] = useState(true);
   const [errorReviews, setErrorReviews] = useState('');
 
-  // Stati per le note con i dettagli aggiuntivi (average rating e le valutazioni per ogni nota)
+  // Stati per le note con i dettagli aggiuntivi
   const [notesWithDetails, setNotesWithDetails] = useState([]);
   const [loadingNotes, setLoadingNotes] = useState(true);
   const [errorNotes, setErrorNotes] = useState('');
 
-  // Stato per il profilo utente (per verificare la faculty dell'utente)
+  // Stato per il profilo utente
   const [userFacultyId, setUserFacultyId] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
@@ -63,10 +71,20 @@ const SingleCourse = () => {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [errorSubmit, setErrorSubmit] = useState('');
 
-  // Stati per il form di rating nota (simile al Review Form)
+  // Stati per il form di rating della nota
   const [noteRatingFormOpen, setNoteRatingFormOpen] = useState(null);
   const [newNoteRating, setNewNoteRating] = useState(0);
   const [newNoteComment, setNewNoteComment] = useState('');
+
+  // Stati per la segnalazione (report)
+  // Per le recensioni:
+  const [reportedReviews, setReportedReviews] = useState({});
+  const [reviewReportFormOpen, setReviewReportFormOpen] = useState(null);
+  const [newReviewReportReason, setNewReviewReportReason] = useState('');
+  // Per le note:
+  const [reportedNotes, setReportedNotes] = useState({});
+  const [noteReportFormOpen, setNoteReportFormOpen] = useState(null);
+  const [newNoteReportReason, setNewNoteReportReason] = useState('');
 
   // Funzione per fetchare le recensioni
   const fetchReviews = async () => {
@@ -90,7 +108,7 @@ const SingleCourse = () => {
     }
   };
 
-  // Funzione per fetchare le note e per ciascuna ottenere average rating e le valutazioni
+  // Funzione per fetchare le note con i dettagli aggiuntivi
   const fetchNotesWithDetails = async () => {
     try {
       setLoadingNotes(true);
@@ -144,7 +162,35 @@ const SingleCourse = () => {
     }
   };
 
-  // Fetch dei dettagli del corso e del teacher tramite l'endpoint /courses/{courseId}/teacher
+  // Handler per l'upload della nota
+  const handleNoteSubmit = async (e) => {
+    e.preventDefault();
+    setUploadingNote(true);
+    setErrorUploadNote('');
+    try {
+      const token = localStorage.getItem('access_token');
+      const formData = new FormData();
+      formData.append('course_id', courseId);
+      formData.append('description', newNoteDescription);
+      formData.append('file', newNoteFile);
+      await axios.post(
+        `${process.env.REACT_APP_NOTES_API_URL}/notes/`,
+        formData,
+        { headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" } }
+      );
+      await fetchNotesWithDetails();
+      setNewNoteFile(null);
+      setNewNoteDescription('');
+      setShowNoteForm(false);
+    } catch (error) {
+      console.error('Errore durante l\'upload della nota:', error);
+      setErrorUploadNote('Errore durante l\'upload della nota.');
+    } finally {
+      setUploadingNote(false);
+    }
+  };
+
+  // Fetch dei dettagli del corso e del teacher
   useEffect(() => {
     const fetchCourseDetails = async () => {
       try {
@@ -170,7 +216,7 @@ const SingleCourse = () => {
       }
     };
 
-    const fetchTeacherDetails = async () => {
+    const fetchTeacherDetails = async (teacherId) => {
       try {
         const token = localStorage.getItem('access_token');
         const response = await axios.get(
@@ -194,7 +240,7 @@ const SingleCourse = () => {
     fetchCourseDetails();
   }, [courseId]);
 
-  // Fetch delle medie dei voti del corso
+  // Fetch delle medie dei voti
   useEffect(() => {
     const fetchRatings = async () => {
       try {
@@ -234,7 +280,7 @@ const SingleCourse = () => {
     fetchNotesWithDetails();
   }, [courseId]);
 
-  // Fetch del profilo utente, salvando anche l'oggetto completo
+  // Fetch del profilo utente
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
@@ -256,7 +302,7 @@ const SingleCourse = () => {
     fetchUserDetails();
   }, []);
 
-  // Handler per modificare il form recensione
+  // Handler per modificare il form della review
   const handleReviewChange = (field, value) => {
     setNewReview(prevState => ({
       ...prevState,
@@ -264,7 +310,7 @@ const SingleCourse = () => {
     }));
   };
 
-  // Handler per il submit della recensione
+  // Handler per il submit della review
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     setSubmittingReview(true);
@@ -317,7 +363,7 @@ const SingleCourse = () => {
     }
   };
 
-  // Handler per il submit del rating della nota (simile al Review Form)
+  // Handler per il submit del rating della nota
   const handleNoteRatingSubmit = async (e, noteId) => {
     e.preventDefault();
     try {
@@ -337,7 +383,45 @@ const SingleCourse = () => {
     }
   };
 
-  // Componente custom per le stelline colorate in oro
+  // Handler per il submit del report di una review
+  const handleReviewReportSubmit = async (e, reviewId) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('access_token');
+      const payload = { id_review: reviewId, reason: newReviewReportReason };
+      await axios.post(
+        `${process.env.REACT_APP_NOTES_API_URL}/notes/reports/`,
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setReportedReviews(prev => ({ ...prev, [reviewId]: true }));
+      setReviewReportFormOpen(null);
+      setNewReviewReportReason('');
+    } catch (error) {
+      console.error("Error reporting review:", error);
+    }
+  };
+
+  // Handler per il submit del report di una nota
+  const handleNoteReportSubmit = async (e, noteId) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('access_token');
+      const payload = { id_note: noteId, reason: newNoteReportReason };
+      await axios.post(
+        `${process.env.REACT_APP_NOTES_API_URL}/notes/reports/`,
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setReportedNotes(prev => ({ ...prev, [noteId]: true }));
+      setNoteReportFormOpen(null);
+      setNewNoteReportReason('');
+    } catch (error) {
+      console.error("Error reporting note:", error);
+    }
+  };
+
+  // Componente per le stelline colorate in oro
   const CustomRating = ({ value, readOnly = true, onChange = null, name }) => (
     <Rating
       name={name}
@@ -352,7 +436,7 @@ const SingleCourse = () => {
 
   return (
     <Box sx={{ p: 2 }}>
-      {/* Header con posizione relativa */}
+      {/* Header */}
       {loadingCourse ? (
         <Box sx={{ textAlign: 'center', my: 4 }}>
           <CircularProgress />
@@ -407,7 +491,7 @@ const SingleCourse = () => {
 
       <Divider sx={{ my: 2 }} />
 
-      {/* Sezione Recensioni */}
+      {/* Sezione Reviews */}
       <Box sx={{ my: 3 }}>
         <Typography variant="h5" gutterBottom>
           Reviews
@@ -444,7 +528,32 @@ const SingleCourse = () => {
                   {new Date(rev.created_at).toLocaleDateString()}
                 </Typography>
                 <Typography variant="body1">{rev.comment}</Typography>
+                {/* I tre puntini per report vengono mostrati SOLO se l'utente appartiene alla stessa facoltà */}
+                {currentUser && currentUser.faculty_id === courseFacultyId && (
+                  <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
+                    {!reportedReviews[rev.id] && (
+                      <IconButton onClick={() => setReviewReportFormOpen(rev.id)}>
+                        <MoreVertIcon />
+                      </IconButton>
+                    )}
+                  </Box>
+                )}
                 <Divider sx={{ my: 1, width: '100%' }} />
+                {reviewReportFormOpen === rev.id && (
+                  <Box component="form" onSubmit={(e) => handleReviewReportSubmit(e, rev.id)} sx={{ mt: 1, width: '100%' }}>
+                    <TextField
+                      variant="outlined"
+                      size="small"
+                      placeholder="Report reason"
+                      value={newReviewReportReason}
+                      onChange={(e) => setNewReviewReportReason(e.target.value)}
+                      fullWidth
+                    />
+                    <Button type="submit" variant="contained" size="small" sx={{ mt: 1 }}>
+                      Report
+                    </Button>
+                  </Box>
+                )}
               </ListItem>
             ))}
           </List>
@@ -553,7 +662,6 @@ const SingleCourse = () => {
           <List>
             {notesWithDetails.map((note) => (
               <ListItem key={note.id} sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                {/* Header della nota: nome, average rating e download */}
                 <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="subtitle1" component="div">
                     <strong>{note.description}</strong>
@@ -565,7 +673,6 @@ const SingleCourse = () => {
                     </IconButton>
                   </Box>
                 </Box>
-                {/* Dettaglio delle valutazioni della nota */}
                 {note.ratings.length > 0 ? (
                   note.ratings.map((r, index) => (
                     <Box key={index} sx={{ mt: 1 }}>
@@ -582,48 +689,81 @@ const SingleCourse = () => {
                     No ratings for this note.
                   </Typography>
                 )}
+                {/* Pulsante per segnalare la nota: mostrato solo se l'utente appartiene alla stessa facoltà */}
+                {currentUser && currentUser.faculty_id === courseFacultyId && (
+                  <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
+                    {!reportedNotes[note.id] && (
+                      <IconButton onClick={() => setNoteReportFormOpen(note.id)}>
+                        <MoreVertIcon />
+                      </IconButton>
+                    )}
+                  </Box>
+                )}
                 <Divider sx={{ my: 1, width: '100%' }} />
-                {/* Sezione per il rating della nota (simile al Review Form) */}
-                {currentUser &&
-                  courseFacultyId !== null &&
-                  currentUser.faculty_id === courseFacultyId &&
-                  note.student_id !== currentUser.id && (
-                    <>
-                      <Button variant="text" onClick={() => setNoteRatingFormOpen(note.id)}>
-                        Rate Note
-                      </Button>
-                      {noteRatingFormOpen === note.id && (
-                        <Box component="form" onSubmit={(e) => handleNoteRatingSubmit(e, note.id)} sx={{ mt: 1, width: '100%' }}>
-                          <Rating
-                            name={`note-rating-${note.id}`}
-                            value={newNoteRating}
-                            precision={1}
-                            onChange={(event, newValue) => setNewNoteRating(newValue)}
-                            icon={<StarIcon sx={{ color: '#FFD700' }} />}
-                            emptyIcon={<StarBorderIcon />}
-                          />
-                          <TextField
-                            variant="outlined"
-                            size="small"
-                            placeholder="Add comment"
-                            value={newNoteComment}
-                            onChange={(e) => setNewNoteComment(e.target.value)}
-                            sx={{ ml: 1 }}
-                          />
-                          <Button type="submit" variant="contained" size="small" sx={{ ml: 1 }}>
-                            Submit
-                          </Button>
-                        </Box>
-                      )}
-                    </>
-                  )}
+                {noteReportFormOpen === note.id && (
+                  <Box component="form" onSubmit={(e) => handleNoteReportSubmit(e, note.id)} sx={{ mt: 1, width: '100%' }}>
+                    <TextField
+                      variant="outlined"
+                      size="small"
+                      placeholder="Report reason"
+                      value={newNoteReportReason}
+                      onChange={(e) => setNewNoteReportReason(e.target.value)}
+                      fullWidth
+                    />
+                    <Button type="submit" variant="contained" size="small" sx={{ mt: 1 }}>
+                      Report
+                    </Button>
+                  </Box>
+                )}
               </ListItem>
             ))}
           </List>
         )}
         <Box sx={{ textAlign: 'center', my: 2 }}>
-          <Button variant="contained">Add Note</Button>
+          {currentUser && courseFacultyId !== null && currentUser.faculty_id === courseFacultyId ? (
+            <Button variant="contained" onClick={() => setShowNoteForm(!showNoteForm)}>
+              {showNoteForm ? 'Cancel' : 'Add Note'}
+            </Button>
+          ) : (
+            <Typography variant="body2" color="textSecondary">
+              You are not allowed to add notes for this course.
+            </Typography>
+          )}
         </Box>
+        {showNoteForm && (
+          <Box
+            component="form"
+            onSubmit={handleNoteSubmit}
+            sx={{
+              maxWidth: 500,
+              mx: 'auto',
+              p: 2,
+              border: '1px solid #ccc',
+              borderRadius: 2,
+            }}
+          >
+            <TextField
+              label="Description"
+              value={newNoteDescription}
+              onChange={(e) => setNewNoteDescription(e.target.value)}
+              fullWidth
+              sx={{ mb: 2 }}
+            />
+            <input
+              type="file"
+              onChange={(e) => setNewNoteFile(e.target.files[0])}
+              style={{ marginBottom: '16px' }}
+            />
+            {errorUploadNote && (
+              <Typography color="error" variant="caption" display="block">
+                {errorUploadNote}
+              </Typography>
+            )}
+            <Button type="submit" variant="contained" disabled={uploadingNote}>
+              {uploadingNote ? 'Uploading...' : 'Submit Note'}
+            </Button>
+          </Box>
+        )}
       </Box>
     </Box>
   );
