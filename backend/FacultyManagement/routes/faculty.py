@@ -76,21 +76,21 @@ def get_my_faculty(
 # ✅ **Cambiare facoltà per l'utente autenticato**
 @router.put("/change-faculty/{faculty_id}")
 def change_faculty(
-    new_faculty_id: int,
+    faculty_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)  # Ora usiamo l'utente autenticato
 ):
     # Verifica se la nuova facoltà esiste
-    faculty = db.query(Faculty).filter(Faculty.id == new_faculty_id).first()
+    faculty = db.query(Faculty).filter(Faculty.id == faculty_id).first()
     if not faculty:
         raise HTTPException(status_code=404, detail="New faculty not found")
 
     # Se l'utente è già iscritto alla stessa facoltà, non fare nulla
-    if current_user.faculty_id == new_faculty_id:
+    if current_user.faculty_id == faculty_id:
         raise HTTPException(status_code=400, detail="User is already enrolled in this faculty")
 
     # Aggiorna la facoltà dell'utente
-    current_user.faculty_id = new_faculty_id
+    current_user.faculty_id = faculty_id
     db.commit()
     db.refresh(current_user)
 

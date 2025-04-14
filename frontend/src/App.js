@@ -10,6 +10,9 @@ import MyProfileEdit from './components/MyProfileEdit';
 import Faculties from './components/Faculties';
 import SingleFaculty from './components/SingleFaculty';
 import SingleCourse from './components/SingleCourse';
+import YourReviews from './components/YourReviews';
+import YourNotes from './components/YourNotes';
+import ChangeFacultyPage from './components/ChangeFacultyPage';
 import './styles/_variables.scss'; // Importa il file SCSS con la palette e la regola no-cursor
 
 function App() {
@@ -30,6 +33,9 @@ function App() {
             <Route path="faculties" element={<Faculties />} />
             <Route path="faculties/:facultyId/courses" element={<SingleFaculty />} />
             <Route path="courses/:courseId" element={<SingleCourse />} />
+            <Route path="reviews" element={<YourReviews />} />
+            <Route path="notes" element={<YourNotes />} />
+            <Route path="change-faculty" element={<ChangeFacultyPage />} />
           </Route>
         </Routes>
       </Router>

@@ -129,8 +129,12 @@ def download_note(note_id: int, db: Session = Depends(get_db), current_user=Depe
         raise HTTPException(status_code=404, detail="File not found in storage.")
 
     response = StreamingResponse(BytesIO(file.read()), media_type=file.content_type)
-    response.headers["Content-Disposition"] = f"attachment; filename={file.filename}"
+    # Rimuove eventuali header duplicati e imposta solo uno.
+    if "Content-Disposition" in response.headers:
+        del response.headers["Content-Disposition"]
+    response.headers["Content-Disposition"] = f'attachment; filename="{file.filename}"'
     return response
+
 
 # ⭐ **6. Aggiungere una valutazione a una nota**
 @router.post("/ratings", response_model=NoteRatingResponse)

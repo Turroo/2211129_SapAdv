@@ -45,12 +45,12 @@ const SingleCourse = () => {
   const [loadingRatings, setLoadingRatings] = useState(true);
   const [errorRatings, setErrorRatings] = useState('');
 
-  // Stati per le recensioni del corso
+  // Stati per le recensioni del corso (sola lettura)
   const [reviews, setReviews] = useState([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
   const [errorReviews, setErrorReviews] = useState('');
 
-  // Stati per le note con i dettagli aggiuntivi
+  // Stati per le note con i dettagli aggiuntivi (sola lettura)
   const [notesWithDetails, setNotesWithDetails] = useState([]);
   const [loadingNotes, setLoadingNotes] = useState(true);
   const [errorNotes, setErrorNotes] = useState('');
@@ -71,10 +71,10 @@ const SingleCourse = () => {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [errorSubmit, setErrorSubmit] = useState('');
 
-  // Stati per il form di rating della nota
+  // Stati per il form di rating della nota (Note Rating)
   const [noteRatingFormOpen, setNoteRatingFormOpen] = useState(null);
-  const [newNoteRating, setNewNoteRating] = useState(0);
-  const [newNoteComment, setNewNoteComment] = useState('');
+  const [noteRatingValue, setNoteRatingValue] =useState(1);
+  const [noteRatingComment, setNoteRatingComment] = useState('');
 
   // Stati per la segnalazione (report)
   // Per le recensioni:
@@ -240,7 +240,7 @@ const SingleCourse = () => {
     fetchCourseDetails();
   }, [courseId]);
 
-  // Fetch delle medie dei voti
+  // Fetch delle medie dei voti del corso
   useEffect(() => {
     const fetchRatings = async () => {
       try {
@@ -302,7 +302,7 @@ const SingleCourse = () => {
     fetchUserDetails();
   }, []);
 
-  // Handler per modificare il form della review
+  // Handler per modificare il form della review (solo per aggiunta; dalla SingleCourse non si possono modificare/eliminare review)
   const handleReviewChange = (field, value) => {
     setNewReview(prevState => ({
       ...prevState,
@@ -346,7 +346,7 @@ const SingleCourse = () => {
       const disposition = response.headers['content-disposition'];
       if (disposition && disposition.indexOf('filename=') !== -1) {
         const fileNameMatch = disposition.match(/filename="?([^"]+)"?/);
-        if (fileNameMatch.length > 1) {
+        if (fileNameMatch && fileNameMatch.length > 1) {
           fileName = fileNameMatch[1];
         }
       }
@@ -363,20 +363,20 @@ const SingleCourse = () => {
     }
   };
 
-  // Handler per il submit del rating della nota
+  // Handler per il submit del rating della nota (Note Rating)
   const handleNoteRatingSubmit = async (e, noteId) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('access_token');
-      const payload = { note_id: noteId, rating: newNoteRating, comment: newNoteComment };
+      const payload = { note_id: noteId, rating: noteRatingValue, comment: noteRatingComment };
       await axios.post(
         `${process.env.REACT_APP_NOTES_API_URL}/notes/ratings`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       await fetchNotesWithDetails();
-      setNewNoteRating(0);
-      setNewNoteComment('');
+      setNoteRatingValue(0);
+      setNoteRatingComment('');
       setNoteRatingFormOpen(null);
     } catch (error) {
       console.error("Errore nel rating della nota:", error);
@@ -421,7 +421,7 @@ const SingleCourse = () => {
     }
   };
 
-  // Componente per le stelline colorate in oro
+  // Componente per le stelline personalizzate
   const CustomRating = ({ value, readOnly = true, onChange = null, name }) => (
     <Rating
       name={name}
@@ -491,7 +491,7 @@ const SingleCourse = () => {
 
       <Divider sx={{ my: 2 }} />
 
-      {/* Sezione Reviews */}
+      {/* Sezione Reviews (solo lettura) */}
       <Box sx={{ my: 3 }}>
         <Typography variant="h5" gutterBottom>
           Reviews
@@ -507,7 +507,7 @@ const SingleCourse = () => {
         ) : (
           <List>
             {reviews.map((rev) => (
-              <ListItem key={rev.id} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+              <ListItem key={rev.id} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', mb: 2 }}>
                 <Box sx={{ width: '100%', mb: 1 }}>
                   <Grid container spacing={1}>
                     <Grid item xs={4}>
@@ -528,7 +528,6 @@ const SingleCourse = () => {
                   {new Date(rev.created_at).toLocaleDateString()}
                 </Typography>
                 <Typography variant="body1">{rev.comment}</Typography>
-                {/* I tre puntini per report vengono mostrati SOLO se l'utente appartiene alla stessa facoltà */}
                 {currentUser && currentUser.faculty_id === courseFacultyId && (
                   <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
                     {!reportedReviews[rev.id] && (
@@ -562,7 +561,7 @@ const SingleCourse = () => {
 
       <Divider sx={{ my: 2 }} />
 
-      {/* Sezione per aggiungere una recensione */}
+      {/* Sezione per aggiungere una review */}
       <Box sx={{ textAlign: 'center', my: 2 }}>
         {(!loadingUser && courseFacultyId !== null && userFacultyId !== courseFacultyId) ? (
           <Typography variant="body2" color="textSecondary">
@@ -661,7 +660,7 @@ const SingleCourse = () => {
         ) : (
           <List>
             {notesWithDetails.map((note) => (
-              <ListItem key={note.id} sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+              <ListItem key={note.id} sx={{ flexDirection: 'column', alignItems: 'flex-start', mb: 2 }}>
                 <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="subtitle1" component="div">
                     <strong>{note.description}</strong>
@@ -689,17 +688,16 @@ const SingleCourse = () => {
                     No ratings for this note.
                   </Typography>
                 )}
-                {/* Pulsante per segnalare la nota: mostrato solo se l'utente appartiene alla stessa facoltà */}
+                {/* Pulsante per segnalare la nota */}
                 {currentUser && currentUser.faculty_id === courseFacultyId && (
                   <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
                     {!reportedNotes[note.id] && (
-                      <IconButton onClick={() => setNoteReportFormOpen(note.id)}>
+                      <IconButton onClick={() => setNoteReportFormOpen(noteReportFormOpen === note.id ? null : note.id)}>
                         <MoreVertIcon />
                       </IconButton>
                     )}
                   </Box>
                 )}
-                <Divider sx={{ my: 1, width: '100%' }} />
                 {noteReportFormOpen === note.id && (
                   <Box component="form" onSubmit={(e) => handleNoteReportSubmit(e, note.id)} sx={{ mt: 1, width: '100%' }}>
                     <TextField
@@ -715,6 +713,49 @@ const SingleCourse = () => {
                     </Button>
                   </Box>
                 )}
+
+                {/* Pulsante per aggiungere un Note Rating:
+                    Compare solo se la nota appartiene al corso della stessa facoltà e l'utente NON è il proprietario */}
+                {currentUser && currentUser.faculty_id === courseFacultyId && currentUser.id !== note.student_id && (
+                  <>
+                    { note.ratings.some(r => r.student_id === currentUser.id) ? (
+                      <Typography variant="body2" color="textSecondary">
+                        You have already rated this note.
+                      </Typography>
+                    ) : (
+                      <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-start', mt: 1 }}>
+                        <Button variant="outlined" onClick={() => setNoteRatingFormOpen(note.id)}>
+                          Rate Note
+                        </Button>
+                      </Box>
+                    )}
+                  </>
+                )}
+                {noteRatingFormOpen === note.id && (
+                  <Box component="form" onSubmit={(e) => handleNoteRatingSubmit(e, note.id)} sx={{ mt: 1, width: '100%' }}>
+                    <Rating
+                      name={`note-rating-${note.id}`}
+                      value={noteRatingValue}
+                      precision={1}
+                      onChange={(e, newValue) => setNoteRatingValue(newValue)}
+                      icon={<StarIcon sx={{ color: '#FFD700' }} />}
+                      emptyIcon={<StarBorderIcon />}
+                    />
+                    <TextField
+                      variant="outlined"
+                      size="small"
+                      placeholder="Leave a comment"
+                      value={noteRatingComment}
+                      onChange={(e) => setNoteRatingComment(e.target.value)}
+                      fullWidth
+                      sx={{ mt: 1 }}
+                    />
+                    <Button type="submit" variant="contained" size="small" sx={{ mt: 1 }}>
+                      Submit Rating
+                    </Button>
+                  </Box>
+                )}
+                <Divider sx={{ my: 1, width: '100%' }} />
               </ListItem>
             ))}
           </List>
