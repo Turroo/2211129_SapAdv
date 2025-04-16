@@ -334,34 +334,52 @@ const SingleCourse = () => {
     }
   };
 
-  // Handler per il download di una nota
   const handleDownloadNote = async (noteId) => {
     try {
+      // Recupera il token JWT dal localStorage
       const token = localStorage.getItem('access_token');
+  
+      // Effettua la richiesta GET all'endpoint di download con responseType 'blob'
       const response = await axios.get(
         `${process.env.REACT_APP_NOTES_API_URL}/notes/download/${noteId}`,
-        { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' }
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: 'blob'
+        }
       );
-      let fileName = 'note.pdf';
+  
+      // Imposta un nome di default per il file
+      let fileName = 'downloaded_note';
+  
+      // Estrae il nome del file dall'header Content-Disposition usando un'espressione regolare più robusta
       const disposition = response.headers['content-disposition'];
-      if (disposition && disposition.indexOf('filename=') !== -1) {
-        const fileNameMatch = disposition.match(/filename="?([^"]+)"?/);
-        if (fileNameMatch && fileNameMatch.length > 1) {
-          fileName = fileNameMatch[1];
+      if (disposition) {
+        // Questa regex gestisce sia casi con che senza virgolette
+        const fileNameMatch = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (fileNameMatch != null && fileNameMatch[1]) {
+          fileName = fileNameMatch[1].replace(/['"]/g, '');
         }
       }
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+  
+      // Crea un URL oggetto per il blob
+      const blobUrl = window.URL.createObjectURL(response.data);
+  
+      // Crea un elemento <a> temporaneo e attiva il download
       const link = document.createElement('a');
-      link.href = url;
+      link.href = blobUrl;
       link.setAttribute('download', fileName);
       document.body.appendChild(link);
       link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+  
+      // Rimuove l'elemento e revoca l'URL per liberare le risorse
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
     } catch (error) {
       console.error('Errore durante il download della nota:', error);
     }
   };
+  
+  
 
   // Handler per il submit del rating della nota (Note Rating)
   const handleNoteRatingSubmit = async (e, noteId) => {
