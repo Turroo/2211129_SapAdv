@@ -65,6 +65,20 @@ def delete_user(user_id: int, db: Session = Depends(get_db), admin=Depends(get_c
     reset_sequence(db, "users", "id")
     return {"message": "User deleted successfully"}
 
+@router.get("/users", response_model=List[UserResponse])
+def get_all_users(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Verifica che sia un admin
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="Only admins can view all users"
+        )
+
+    return db.query(User).all()
+
 # 📝 2️⃣ **Gestione note e recensioni**
 @router.get("/notes", response_model=List[NoteResponse])
 def get_notes(db: Session = Depends(get_db), admin=Depends(get_current_user)):

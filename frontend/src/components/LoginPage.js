@@ -26,26 +26,34 @@ const LoginPage = () => {
       setError('Please fill in both email and password.');
       return;
     }
+
     setLoading(true);
     try {
       // Effettua la richiesta di login
-      const response = await axios.post(`${process.env.REACT_APP_AUTH_API_URL}/auth/login`, {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        `${process.env.REACT_APP_AUTH_API_URL}/auth/login`,
+        { email, password }
+      );
       const token = response.data.access_token;
       localStorage.setItem('access_token', token);
 
-      // Recupera i dettagli dell'utente (endpoint /users/me)
-      const userResponse = await axios.get(`${process.env.REACT_APP_USER_API_URL}/users/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Recupera i dettagli dell'utente
+      const userResponse = await axios.get(
+        `${process.env.REACT_APP_USER_API_URL}/users/me`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       const userData = userResponse.data;
-      
-      // Se il faculty_id non è impostato, reindirizza alla pagina di selezione della facoltà
-      if (!userData.faculty_id) {
+
+      // Se è admin, vado direttamente alla Admin Dashboard
+      if (userData.is_admin) {
+        navigate('/dashboard/admin/');
+      }
+      // Altrimenti: se non ha una faculty, gli faccio selezionare la facoltà
+      else if (!userData.faculty_id) {
         navigate('/faculty-selection');
-      } else {
+      }
+      // Altrimenti vado alla normale homepage utente
+      else {
         navigate('/dashboard/home');
       }
     } catch (err) {
@@ -70,6 +78,7 @@ const LoginPage = () => {
       >
         <Logo src="/logo.png" alt="SapienzaAdvisor Logo" />
         <Typography component="h1" variant="h5" sx={{ color: '#0D47A1', mb: 2 }}>
+          Login
         </Typography>
         {error && (
           <Alert severity="error" sx={{ width: '100%', mb: 2 }}>

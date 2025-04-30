@@ -69,6 +69,7 @@ class CourseResponse(BaseModel):
 class CourseCreate(BaseModel):
     name: str
     faculty_id: int
+    teacher_id: Optional[int] = None
 
 # 📌 Insegnante
 class TeacherResponse(BaseModel):
