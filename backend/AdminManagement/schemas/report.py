@@ -9,6 +9,8 @@ class ReportCreate(BaseModel):
 
 class ReportResponse(BaseModel):
     id_report: int
+    id_review : Optional[int]
+    id_note: Optional[int]
     id_user: int
     datetime: datetime
     reason: str

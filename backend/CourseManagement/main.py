@@ -56,10 +56,10 @@ def populate_database():
         # ✅ **Popoliamo i Docenti**
         if db.query(Teacher).count() == 0:
             teachers = [
-                Teacher(id=1, name="Prof. Mario Rossi"),
-                Teacher(id=2, name="Prof.ssa Laura Bianchi"),
-                Teacher(id=3, name="Prof. Giovanni Verdi"),
-                Teacher(id=4, name="Prof.ssa Anna Neri"),
+                Teacher(id=1, name="Mario Rossi"),
+                Teacher(id=2, name="Laura Bianchi"),
+                Teacher(id=3, name="Giovanni Verdi"),
+                Teacher(id=4, name="Anna Neri"),
             ]
             db.add_all(teachers)
             db.commit()
@@ -79,33 +79,15 @@ def populate_database():
         # ✅ **Popoliamo gli Utenti**
         if db.query(User).count() == 0:
             users = [
-                User(id=1, email="user1@example.com", hashed_password=hash_password("example"), is_admin=True, first_name="Alice", last_name="Rossi", birth_date="2000-05-12", city="Roma", faculty_id=1),
+                User(id=1, email="user1@example.com", hashed_password=hash_password("example"), is_admin=False, first_name="Alice", last_name="Rossi", birth_date="2000-05-12", city="Roma", faculty_id=1),
                 User(id=2, email="user2@example.com", hashed_password=hash_password("example"), is_admin=False, first_name="Bob", last_name="Bianchi", birth_date="1999-07-24", city="Milano", faculty_id=2),
                 User(id=3, email="user3@example.com", hashed_password=hash_password("example"), is_admin=False, first_name="Charlie", last_name="Verdi", birth_date="2001-02-18", city="Napoli", faculty_id=1),
+                User(id=3, email="admin@example.com", hashed_password=hash_password("admin"), is_admin=True, first_name="Super", last_name="Admin", birth_date="2001-02-18", city="Napoli", faculty_id=1)
             ]
             db.add_all(users)
             db.commit()
             print("✅ Utenti inseriti con successo!")
 
-        # ✅ **Popoliamo le Note**
-        if db.query(Note).count() == 0:
-            notes = [
-                Note(id=1, course_id=1, student_id=1, file_id="file123", description="Appunti su Algoritmi e Strutture Dati", created_at=datetime.utcnow()),
-                Note(id=2, course_id=2, student_id=2, file_id="file456", description="Esercizi svolti di Analisi Matematica 1", created_at=datetime.utcnow()),
-            ]
-            db.add_all(notes)
-            db.commit()
-            print("✅ Note inserite con successo!")
-
-        # ✅ **Popoliamo le Valutazioni delle Note**
-        if db.query(NoteRating).count() == 0:
-            note_ratings = [
-                NoteRating(id=1, note_id=1, student_id=2, rating=5, comment="Appunti molto chiari, grazie!", created_at=datetime.utcnow()),
-                NoteRating(id=2, note_id=2, student_id=3, rating=4, comment="Utile ma manca qualche passaggio.", created_at=datetime.utcnow()),
-            ]
-            db.add_all(note_ratings)
-            db.commit()
-            print("✅ Valutazioni delle note inserite con successo!")
 
         # ✅ **Popoliamo le Recensioni dei Corsi**
         if db.query(Review).count() == 0:

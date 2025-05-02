@@ -22,6 +22,7 @@ import AdminUsersPage from './components/AdminUsersPage';
 import AdminCoursesPage from './components/AdminCoursesPage';
 import AdminFacultiesPage from './components/AdminFacultiesPage';
 import AdminTeachersPage from './components/AdminTeachersPage';
+import AdminReportsPage from './components/AdminReportsPage';
 
 import './styles/_variables.scss';
 
@@ -56,6 +57,7 @@ function App() {
             <Route path="faculties/:facultyId/courses" element={<AdminCoursesPage />} />
             <Route path="faculties" element={<AdminFacultiesPage />} />
             <Route path="teachers" element={<AdminTeachersPage />} />
+            <Route path="reports" element={<AdminReportsPage />} />
           </Route>
         </Routes>
       </Router>
