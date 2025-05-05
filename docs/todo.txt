@@ -1,5 +1,0 @@
-Missing API:
-
--Auth:
-	- google sign up + login (LEO?)
-
