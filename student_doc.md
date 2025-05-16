@@ -427,3 +427,78 @@ The admin service performs write operations on persistent PostgreSQL storage, an
 
 
 
+## CONTAINER_NAME: Frontend-Service
+
+### USER STORIES:
+1) As a User, I want to register to the site so I can access it.  
+2) As a User, I want to login to the site so I can access it.  
+4) As a User, I want to reload the site many times avoiding to put the credentials every time a reload occurs, so I can use the site.  
+5) As a User, I want to be able to logout, so no one else uses my account.  
+6) As a User, I want to check my personal information.  
+7) As a User, I want to edit my personal information, as some of my info may change.  
+8) As a User, I want to choose the degree I'm enrolled in, so I can use the site in the correct way.  
+9) As a User, I want to see the list of courses of my degree, so I can use the functionalities of the site.  
+10) As a User, I want to select a course of my degree, so I can see the teacher that takes that course.  
+11) As a User, I want to rate the course taken by the chosen teacher, so that the rating gets added.  
+12) As a User, I want to check the average rating of the course taken by the single teacher, so I can eventually decide whether to take or not take the course.  
+13) As a User, I want to add a written review for a specific course taken by a single teacher, so everyone can check my review.  
+14) As a User, I want to edit/delete a personal written review, as I may have made some mistakes.  
+15) As a User, I want to edit/delete a rating I have assigned, as I may have made some mistakes.  
+16) As a User, I want to check notes/material uploaded for a single course taken by a single teacher, so I can use this material.  
+17) As a User, I want to check ratings assigned to the uploaded material, so I can decide whether to download the material or not.  
+18) As a User, I want to upload notes/material for a single course taken by a single teacher, so that I can contribute to the academic community.  
+19) As a User, I want to add a description to the uploaded material, so that others can understand its contents before downloading.  
+20) As a User, I want to edit/delete my uploaded material, in case I want to update or remove it.  
+21) As a User, I want to rate the uploaded material, so that the best resources are highlighted.  
+22) As a User, I want to report inappropriate or incorrect material, so that the administrators can review and take necessary actions.  
+
+### PORTS:
+3000:3000
+
+### DESCRIPTION:
+The Frontend-Service container delivers the full Single Page Application (SPA) for SapienzaAdvisor, providing both student and administrator interfaces. Students can register, log in, manage their profiles, explore degree programs, review courses and teachers, and interact through notes and reviews. Admins can log in securely and access a dedicated dashboard for moderating content, managing faculties, courses, and users. The container connects to backend microservices via REST APIs to ensure data consistency and dynamic interactions across the platform.
+
+### PERSISTENCE EVALUATION:
+Client-FE does not persist any data locally. All state and data management is handled by backend microservices through API communication.
+
+### EXTERNAL SERVICES CONNECTIONS:
+- Communicates via REST with:
+  - **Auth** for registration, login, and session persistence
+  - **Users** for profile updates and deletions
+  - **Faculty** for faculty enrollment and management
+  - **Course** for reviews, ratings, and course data
+  - **Notes** for uploading, viewing, and reporting study materials
+  - **Admin** for moderation and system management
+
+### MICROSERVICES:
+
+#### MICROSERVICE: Frontend
+- TYPE: frontend
+- DESCRIPTION: This microservice serves the main SPA user interface for both students and admins.
+- PORTS: 3000
+- - PAGES:
+
+	| Name                  | Description                                                          | Related Microservice           | User Stories                  |
+	|-----------------------|----------------------------------------------------------------------|--------------------------------|-------------------------------|
+	| RegisterPage          | Registration form for new users                                     | auth                           | 1                             |
+	| LoginPage             | Login page for both students and admins                             | auth                           | 2                             |
+	| DashboardHome         | Home dashboard after login                                          | auth, users                    | 4, 5                          |
+	| MyProfile             | View user’s personal information                                    | users                          | 6                             |
+	| MyProfileEdit         | Edit personal information                                           | users                          | 7                             |
+	| FacultySelectionPage  | Select faculty during onboarding                          		  | faculty                        | 8                             |
+	| ChangeFacultyPage     | Change current faculty                                              | faculty                        | 8                             |
+	| Faculties             | List of available faculties                                         | faculty                        | 9                             |
+	| SingleFaculty         | Displays courses under a faculty                                    | course                         | 9                             |
+	| SingleCourse          | Detailed view of course, teacher, reviews, and notes                | course, notes                  | 10, 11, 12, 13, 14, 15        |
+	| YourReviews           | Manage user’s submitted reviews                                     | course                         | 13, 14, 15                    |
+	| YourNotes             | View and manage uploaded notes                                      | notes                          | 16, 17, 18, 19, 20            |
+	| AdminDashboard        | Entry point for the admin panel                                     | admin                          | 23, 24, 25                    |
+	| AdminDashboardHome    | Main page for admin after login                                     | admin                          | 23, 24, 25                    |
+	| AdminUsersPage        | Admin view to manage users                                          | admin                          | 26                            |
+	| AdminCoursesPage      | Admin view to manage courses                                        | admin                          | 30                            |
+	| AdminFacultiesPage    | Admin view to manage faculties                                      | admin                          | 30                            |
+	| AdminTeachersPage     | Admin view to manage teachers                                       | admin                          | 31                            |
+	| AdminReportsPage      | Admin view for moderating reported content                          | admin                          | 29                            |
+
+
+
