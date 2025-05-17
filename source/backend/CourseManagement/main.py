@@ -82,7 +82,7 @@ def populate_database():
                 User(id=1, email="user1@example.com", hashed_password=hash_password("example"), is_admin=False, first_name="Alice", last_name="Rossi", birth_date="2000-05-12", city="Roma", faculty_id=1),
                 User(id=2, email="user2@example.com", hashed_password=hash_password("example"), is_admin=False, first_name="Bob", last_name="Bianchi", birth_date="1999-07-24", city="Milano", faculty_id=2),
                 User(id=3, email="user3@example.com", hashed_password=hash_password("example"), is_admin=False, first_name="Charlie", last_name="Verdi", birth_date="2001-02-18", city="Napoli", faculty_id=1),
-                User(id=3, email="admin@example.com", hashed_password=hash_password("admin"), is_admin=True, first_name="Super", last_name="Admin", birth_date="2001-02-18", city="Napoli", faculty_id=1)
+                User(id=4, email="admin@example.com", hashed_password=hash_password("admin"), is_admin=True, first_name="Super", last_name="Admin", birth_date="2001-02-18", city="Napoli", faculty_id=1)
             ]
             db.add_all(users)
             db.commit()

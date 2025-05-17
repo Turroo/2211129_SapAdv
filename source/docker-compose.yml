@@ -118,8 +118,8 @@ services:
       - notes
       - admin
     volumes:
-      - ./frontend:/app
-      - /app/node_modules  # Mantiene le dipendenze installate nel container
+       - ./frontend:/app 
+       - /app/node_modules               # monta il codice sorgente
     environment:
       - REACT_APP_AUTH_API_URL=http://localhost:8000
       - REACT_APP_USER_API_URL=http://localhost:8001
@@ -130,7 +130,7 @@ services:
       - NODE_ENV=development
     ports:
       - "3000:3000"
-    command: npm start
+    command: sh -c "npm install && npm start"
     networks:
       - app_network
 
