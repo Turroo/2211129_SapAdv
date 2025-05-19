@@ -22,8 +22,12 @@ const Courses = () => {
         );
         setCourses(response.data);
       } catch (err) {
-        console.error("Errore nel recupero dei corsi:", err);
-        setError("Errore nel recupero dei corsi.");
+        if (err.response && err.response.status === 404) {
+          setLoadingCourses([]);
+        } else {
+          console.error("Errore nel recupero dei corsi:", err);
+          setError("Errore nel recupero dei corsi."); 
+        }
       } finally {
         setLoadingCourses(false);
       }
@@ -80,6 +84,8 @@ const Courses = () => {
         <Typography variant="body1" color="error">
           {error}
         </Typography>
+      ) : loadingCourses.length === 0 ? (
+        <Typography variant="body2">No courses available.</Typography>
       ) : (
         <List>
           {filteredCourses.length > 0 ? (
