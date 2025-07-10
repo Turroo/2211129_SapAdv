@@ -8,10 +8,10 @@ import {
   CardContent, 
   Typography, 
   CircularProgress, 
-  Alert,
-  MenuItem
+  Alert
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import '@fortawesome/fontawesome-free/css/all.min.css'; // Import Font Awesome for eye icons
 
 const MyProfileEdit = () => {
   const navigate = useNavigate();
@@ -27,16 +27,15 @@ const MyProfileEdit = () => {
   // Stato per le password
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
-
-  // Facoltà (se vuoi popolare un <select> dinamicamente)
-  const [faculties, setFaculties] = useState([]);
+  const [passwordVisible, setPasswordVisible] = useState(false); // state for password visibility
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false); // state for confirm password visibility
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [successInfo, setSuccessInfo] = useState('');
   const [successPassword, setSuccessPassword] = useState('');
 
-  // Al mount, recupera i dati utente e l'elenco facoltà (se necessario)
+  // Al mount, recupera i dati utente
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -47,13 +46,6 @@ const MyProfileEdit = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // Recupera l'elenco facoltà se serve
-        const facultyRes = await axios.get(`${process.env.REACT_APP_FACULTY_API_URL}/faculties/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        setFaculties(facultyRes.data || []);
-
         setUserData({
           first_name: userRes.data.first_name || '',
           last_name: userRes.data.last_name || '',
@@ -61,7 +53,7 @@ const MyProfileEdit = () => {
           city: userRes.data.city || '',
         });
       } catch (err) {
-        console.error('Errore nel recupero dati utente/facoltà:', err);
+        console.error('Errore nel recupero dati utente:', err);
         setError('Unable to load data.');
       } finally {
         setLoading(false);
@@ -85,7 +77,6 @@ const MyProfileEdit = () => {
           last_name: userData.last_name,
           birth_date: userData.birth_date,
           city: userData.city
-          // faculty_id se vuoi permettere di cambiare facoltà
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -117,7 +108,6 @@ const MyProfileEdit = () => {
         }
       );
       setSuccessPassword('Password updated successfully.');
-      // Reset fields
       setOldPassword('');
       setNewPassword('');
     } catch (err) {
@@ -129,6 +119,14 @@ const MyProfileEdit = () => {
   // Torna alla pagina del profilo
   const goToMyProfile = () => {
     navigate('/dashboard/my-profile');
+  };
+
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setConfirmPasswordVisible(!confirmPasswordVisible);
   };
 
   if (loading) {
@@ -201,26 +199,58 @@ const MyProfileEdit = () => {
             Update Password
           </Typography>
           <Box component="form" onSubmit={handleUpdatePassword}>
-            <TextField 
-              label="Old Password"
-              type="password"
-              value={oldPassword}
-              onChange={(e) => setOldPassword(e.target.value)}
-              fullWidth
-              margin="dense"
-            />
-            <TextField 
-              label="New Password"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              fullWidth
-              margin="dense"
-            />
+            <div style={{ position: 'relative' }}>
+              <TextField 
+                label="Old Password"
+                type={passwordVisible ? 'text' : 'password'}
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+                fullWidth
+                margin="dense"
+              />
+              <i
+                className={`fas fa-eye${passwordVisible ? '-slash' : ''}`}
+                onClick={togglePasswordVisibility}
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  cursor: 'pointer',
+                }}
+              />
+            </div>
+            <div style={{ position: 'relative' }}>
+              <TextField 
+                label="New Password"
+                type={confirmPasswordVisible ? 'text' : 'password'}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                fullWidth
+                margin="dense"
+              />
+              <i
+                className={`fas fa-eye${confirmPasswordVisible ? '-slash' : ''}`}
+                onClick={toggleConfirmPasswordVisibility}
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  cursor: 'pointer',
+                }}
+              />
+            </div>
             <Button type="submit" variant="contained" sx={{ mt: 2 }}>
               Update
             </Button>
             {successPassword && <Alert severity="success" sx={{ mt: 2 }}>{successPassword}</Alert>}
+          </Box>
+          
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <Button variant="outlined" onClick={goToMyProfile}>
+              Cancel
+            </Button>
           </Box>
         </CardContent>
       </Card>

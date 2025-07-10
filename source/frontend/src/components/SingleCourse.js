@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
+  Alert,
   Box,
   Typography,
   Grid,
@@ -15,12 +16,26 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Tooltip,
+  FormControl,    
+  InputLabel,     
+  Select,         
+  MenuItem,
+  Snackbar    
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import DownloadIcon from '@mui/icons-material/Download';
+import InfoIcon from '@mui/icons-material/Info';
+import FilterListIcon from '@mui/icons-material/FilterList';
+
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+
 import axios from 'axios';
 
 const SingleCourse = () => {
@@ -87,6 +102,21 @@ const SingleCourse = () => {
   const [noteRatingFormOpen, setNoteRatingFormOpen] = useState(null);
   const [noteRatingValue, setNoteRatingValue] = useState(1);
   const [noteRatingComment, setNoteRatingComment] = useState('');
+
+  //filtri
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false); // for the sorting filter dialog
+  const [sortCriteria, setSortCriteria] = useState('date'); // default to 'date'
+  const [sortOrder, setSortOrder] = useState('asc'); // default to 'asc'
+  const [sortRatingCategory, setSortRatingCategory] = useState('clarity'); // 'clarity', 'feasibility', 'availability'
+
+  //snackbar notis
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 'success' or 'error'
+
+
+
+
 
   // Stelline dorate
   const CustomRating = ({ value, readOnly = true, onChange = null, name }) => (
@@ -172,6 +202,29 @@ const SingleCourse = () => {
     } finally {
       setLoadingReviews(false);
     }
+  };
+
+   // Apply sorting based on selected criteria
+  const applySorting = () => {
+    let sortedReviews = [...reviews]; // Create a copy of the reviews array
+
+    if (sortCriteria === 'date') {
+      // Sort by date
+      sortedReviews = sortedReviews.sort((a, b) => {
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
+        return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+      });
+    } else if (sortCriteria === 'rating') {
+      // Sort by rating (based on the selected category)
+      sortedReviews = sortedReviews.sort((a, b) => {
+        const ratingA = a[`rating_${sortRatingCategory}`]; // Dynamic rating category
+        const ratingB = b[`rating_${sortRatingCategory}`]; // Dynamic rating category
+        return sortOrder === 'asc' ? ratingA - ratingB : ratingB - ratingA;
+      });
+    }
+
+    setReviews(sortedReviews); // Update the reviews with the sorted array
   };
   useEffect(() => {
     fetchReviews();
@@ -259,6 +312,11 @@ const SingleCourse = () => {
       });
       setShowReviewForm(false);
       await Promise.all([fetchReviews(), fetchRatings()]);
+
+      // Show success message in Snackbar
+      setSnackbarMessage('Review submitted successfully!');
+      setSnackbarSeverity('success');
+      setOpenSnackbar(true); // Open the Snackbar
     } catch {
       setErrorSubmit("Errore durante l'invio della recensione.");
     } finally {
@@ -286,6 +344,11 @@ const SingleCourse = () => {
       setNewNoteDescription('');
       setNewNoteFile(null);
       await fetchNotesWithDetails();
+
+      // Show success message in Snackbar
+      setSnackbarMessage('Note uploaded successfully!');
+      setSnackbarSeverity('success');
+      setOpenSnackbar(true); // Open the Snackbar
     } catch {
       setErrorUploadNote("Errore durante l'upload della nota.");
     } finally {
@@ -332,6 +395,7 @@ const SingleCourse = () => {
   };
 
   // — report recensione (solo altri) —
+  // --- Updated handleReviewReportSubmit ---
   const handleReviewReportSubmit = async (e, revId) => {
     e.preventDefault();
     try {
@@ -344,8 +408,19 @@ const SingleCourse = () => {
       setReportedReviews((p) => ({ ...p, [revId]: true }));
       setReviewReportFormOpen(null);
       setNewReviewReportReason('');
-    } catch {}
+      
+      // Snackbar confirmation after report submission
+      setSnackbarMessage('Review reported successfully!');
+      setSnackbarSeverity('success');
+      setOpenSnackbar(true); // Open the Snackbar
+    } catch {
+      // Handle errors if any
+      setSnackbarMessage('Failed to report the review. Try again!');
+      setSnackbarSeverity('error');
+      setOpenSnackbar(true); // Open the Snackbar
+    }
   };
+
 
   // — report nota (solo altri) —
   const handleNoteReportSubmit = async (e, noteId) => {
@@ -395,17 +470,38 @@ const SingleCourse = () => {
         ) : errorRatings ? (
           <Typography color="error">{errorRatings}</Typography>
         ) : (
-          <Grid container spacing={2} justifyContent="center">
+          <Grid container spacing={2} justifyContent="center" alignItems="center">
             <Grid item>
-              <Typography>Lessons Clarity</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Typography align="center">Lessons Clarity</Typography>
+                <Tooltip title="1: Very unclear, 5: Crystal clear" arrow>
+                  <IconButton sx={{ ml: 1 }}>
+                    <InfoIcon />
+                  </IconButton>
+                </Tooltip>
+              </Box>
               <CustomRating value={courseRatings.average_clarity} />
             </Grid>
             <Grid item>
-              <Typography>Exam Feasibility</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Typography align="center">Exam Feasibility</Typography>
+                <Tooltip title="1: Very tough exam, 5: Very easy exam" arrow>
+                  <IconButton sx={{ ml: 1 }}>
+                    <InfoIcon />
+                  </IconButton>
+                </Tooltip>
+              </Box>
               <CustomRating value={courseRatings.average_feasibility} />
             </Grid>
             <Grid item>
-              <Typography>Teacher Availability</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Typography align="center">Teacher Availability</Typography>
+                <Tooltip title="1: Never available, 5: Always available" arrow>
+                  <IconButton sx={{ ml: 1 }}>
+                    <InfoIcon />
+                  </IconButton>
+                </Tooltip>
+              </Box>
               <CustomRating value={courseRatings.average_availability} />
             </Grid>
           </Grid>
@@ -418,6 +514,13 @@ const SingleCourse = () => {
       <Accordion disableGutters elevation={0} square sx={{ background: 'transparent' }}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="h5">Reviews</Typography>
+          <IconButton
+            size="small"
+            sx={{ ml: 2 }}
+            onClick={() => setFilterDialogOpen(true)}
+          >
+            <FilterListIcon />
+          </IconButton>
         </AccordionSummary>
         <AccordionDetails>
           {loadingReviews ? (
@@ -464,14 +567,19 @@ const SingleCourse = () => {
                       currentUser.id !== rev.student_id &&
                       !reportedReviews[rev.id] && (
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                          <IconButton
+                          <Button
+                            variant="contained"
+                            color="error" // Red button
                             size="small"
-                            onClick={() =>
-                              setReviewReportFormOpen((o) => (o === rev.id ? null : rev.id))
-                            }
+                            onClick={() => {
+                              setReviewReportFormOpen((o) => (o === rev.id ? null : rev.id));
+                              setSnackbarMessage("Please report only if necessary. Avoid unnecessary reports.");
+                              setSnackbarSeverity("info");
+                              setOpenSnackbar(true); // Open snackbar with info message
+                            }}
                           >
-                            <MoreVertIcon />
-                          </IconButton>
+                            Report
+                          </Button>
                         </Box>
                       )}
                     {reviewReportFormOpen === rev.id && (
@@ -490,7 +598,7 @@ const SingleCourse = () => {
                           color="primary"
                           sx={{ mt: 1 }}
                         >
-                          Report
+                          Submit Report
                         </Button>
                       </Box>
                     )}
@@ -505,13 +613,20 @@ const SingleCourse = () => {
             {(!loadingUser && courseFacultyId !== null && userFacultyId !== courseFacultyId) ? (
               <Typography>Can't add reviews – not in your faculty</Typography>
             ) : (
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => setShowReviewForm((v) => !v)}
-              >
-                {showReviewForm ? 'Cancel' : 'Add Review'}
-              </Button>
+              <>
+                <Tooltip 
+                  title={showReviewForm ? "Cancel your review" : "Assign a rating for each of the three categories and leave a comment about the course"}
+                  arrow
+                >
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setShowReviewForm((v) => !v)}
+                  >
+                    {showReviewForm ? 'Cancel' : 'Add Review'}
+                  </Button>
+                </Tooltip>
+              </>
             )}
           </Box>
           {showReviewForm && (
@@ -593,6 +708,69 @@ const SingleCourse = () => {
           )}
         </AccordionDetails>
       </Accordion>
+
+      {/* Sorting Dialog */}
+      <Dialog open={filterDialogOpen} onClose={() => setFilterDialogOpen(false)}>
+        <DialogTitle>Sort Reviews</DialogTitle>
+        <DialogContent>
+          {/* Sorting Criteria Select */}
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Sort By</InputLabel>
+            <Select
+              value={sortCriteria}
+              onChange={(e) => setSortCriteria(e.target.value)}
+              label="Sort By"
+            >
+              <MenuItem value="date">Sort by Date</MenuItem>
+              <MenuItem value="rating">Sort by Rating</MenuItem>
+            </Select>
+          </FormControl>
+
+          {/* Conditional rendering for rating filter */}
+          {sortCriteria === 'rating' && (
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel>Rating Category</InputLabel>
+              <Select
+                value={sortRatingCategory}
+                onChange={(e) => setSortRatingCategory(e.target.value)}
+                label="Rating Category"
+              >
+                <MenuItem value="clarity">Clarity</MenuItem>
+                <MenuItem value="feasibility">Feasibility</MenuItem>
+                <MenuItem value="availability">Availability</MenuItem>
+              </Select>
+            </FormControl>
+          )}
+
+          {/* Sort Order Select */}
+          <FormControl fullWidth>
+            <InputLabel>Sort Order</InputLabel>
+            <Select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              label="Sort Order"
+            >
+              <MenuItem value="asc">Ascending</MenuItem>
+              <MenuItem value="desc">Descending</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setFilterDialogOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              setFilterDialogOpen(false);
+              applySorting(); // Apply sorting when the user clicks 'Apply'
+            }}
+            color="primary"
+          >
+            Apply
+          </Button>
+        </DialogActions>
+      </Dialog>
+
 
       <Divider sx={{ my: 2 }} />
 
@@ -761,13 +939,20 @@ const SingleCourse = () => {
           {/* add note */}
           <Box sx={{ textAlign: 'center', my: 2 }}>
             {currentUser && currentUser.faculty_id === courseFacultyId ? (
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => setShowNoteForm((v) => !v)}
-              >
-                {showNoteForm ? 'Cancel' : 'Add Note'}
-              </Button>
+              <>
+                <Tooltip 
+                  title={showNoteForm ? "Cancel your note upload" : "Upload a document and comment briefly its content"}
+                  arrow
+                >
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setShowNoteForm((v) => !v)}
+                  >
+                    {showNoteForm ? 'Cancel' : 'Add Note'}
+                  </Button>
+                </Tooltip>
+              </>
             ) : (
               <Typography>You are not allowed to add notes for this course.</Typography>
             )}
@@ -798,7 +983,10 @@ const SingleCourse = () => {
                 style={{ marginBottom: 8 }}
               />
               <Typography variant="caption" sx={{ mb: 2, display: 'block' }}>
-                Accepted formats: pdf, doc, docx, xlsx, jpg, png, ppt, pptx
+                Accepted formats: pdf, doc, docx, xlsx, jpg, png, ppt, ppt
+              </Typography>
+              <Typography variant="caption" sx={{ mb: 2, display: 'block' }}>
+                Maximum size: 80 MB
               </Typography>
               {errorUploadNote && (
                 <Typography color="error" variant="caption" display="block" sx={{ mb: 1 }}>
@@ -817,6 +1005,41 @@ const SingleCourse = () => {
           )}
         </AccordionDetails>
       </Accordion>
+
+      {/* Success Snackbar */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ 
+          vertical: 'top', 
+          horizontal: 'right' 
+        }}
+        sx={{
+          position: 'fixed !important',    // Force fixed positioning
+          top: '16px !important',          // Force top position
+          right: '16px !important',        // Force right position
+          zIndex: 9999,                    // High z-index
+          transform: 'none !important',    // Override any transforms
+          '& .MuiSnackbar-root': {
+            position: 'fixed !important',
+            top: '16px !important',
+            right: '16px !important',
+          }
+        }}
+      >
+        <Alert 
+          onClose={() => setOpenSnackbar(false)} 
+          severity={snackbarSeverity} 
+          sx={{ 
+            width: '100%',
+            minWidth: '300px',             // Ensure minimum width
+            boxShadow: 3                   // Add shadow for better visibility
+          }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { Container, Box, Typography, TextField, Button, Alert } from '@mui/material';
 import { styled } from '@mui/system';
+import '@fortawesome/fontawesome-free/css/all.min.css'; // Import Font Awesome
 
 const Logo = styled('img')({
   maxWidth: '150px',
@@ -15,6 +16,7 @@ const Logo = styled('img')({
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false); // state for password visibility
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -63,6 +65,10 @@ const LoginPage = () => {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
+
   return (
     <Container maxWidth="xs" sx={{ mt: 8 }}>
       <Box
@@ -98,18 +104,31 @@ const LoginPage = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Password"
-            type="password"
-            id="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div style={{ position: 'relative' }}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type={passwordVisible ? 'text' : 'password'}
+              id="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <i
+              className={`fas fa-eye${passwordVisible ? '-slash' : ''}`}
+              onClick={togglePasswordVisibility}
+              style={{
+                position: 'absolute',
+                right: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                cursor: 'pointer',
+              }}
+            />
+          </div>
           <Button
             type="submit"
             fullWidth
@@ -119,10 +138,38 @@ const LoginPage = () => {
           >
             {loading ? 'Logging in...' : 'Login'}
           </Button>
-          <Typography variant="body2" align="center">
+          
+          {/* New section: Or login with Google or Facebook */}
+          <Typography variant="body2" align="center" sx={{ mt: 2 }}>
+            Or login with{' '}
+            <Link to="#" style={{ textDecoration: 'none' }}>
+              <i
+                className="fab fa-google"
+                style={{ fontSize: '24px', color: '#DB4437', margin: '0 8px', cursor: 'pointer' }}
+              ></i>
+            </Link>
+            <Link to="#" style={{ textDecoration: 'none' }}>
+              <i
+                className="fab fa-facebook"
+                style={{ fontSize: '24px', color: '#1877F2', margin: '0 8px', cursor: 'pointer' }}
+              ></i>
+            </Link>
+          </Typography>
+          <Typography variant="body2" align="center" sx={{ mt: 2 }}>
             New account?{' '}
-            <Link to="/register" style={{ textDecoration: 'none', color: '#0D47A1' }}>
+            <Link to="/register" style={{ textDecoration: 'underline', color: '#0D47A1' }}>
               Register
+            </Link>
+          </Typography>
+
+          <Typography variant="body2" align="center" sx={{ mt: 1 }}>
+            Forgot your password?{' '}
+            <Link
+              to="#"
+              style={{ textDecoration: 'underline', color: '#0D47A1' }}
+              onClick={(e) => e.preventDefault()} // Prevent redirection
+            >
+              Click here
             </Link>
           </Typography>
         </Box>

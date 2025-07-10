@@ -50,13 +50,57 @@
     margin-bottom: 0.5rem;
     color: $primary-color;
   }
-  
+
   input {
     width: 100%;
     padding: 0.5rem;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 1rem;
+  }
+
+  &.invalid {
+    input {
+      border-color: red;
+    }
+    .error-message {
+      color: red;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+  }
+}
+
+.register-container .password-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.register-container .eye-icon {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+  font-size: 1.25rem;
+  color: $primary-color;
+}
+
+.register-container .password-requirements {
+  margin-top: 10px;
+  font-size: 0.875rem;
+  text-align: left;
+  color: #333;
+
+  ul {
+    padding-left: 20px;
+  }
+
+  li {
+    color: red;
+  }
+
+  li.valid {
+    color: green;
   }
 }
 
@@ -70,9 +114,31 @@
   width: 100%;
   font-size: 1rem;
   margin-bottom: 1rem;
+
+  &:hover {
+    background-color: darken($primary-color, 10%);
+  }
 }
 
 .register-container a {
   color: $primary-color;
+  text-decoration: underline;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.register-container p {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: #555;
+}
+
+.register-container p a {
+  color: $primary-color;
+}
+
+.register-container p a:hover {
   text-decoration: underline;
 }
